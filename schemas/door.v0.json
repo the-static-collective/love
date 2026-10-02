@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/door.v0.json",
+  "title": "LOVE Door v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "door_id",
+    "title",
+    "premise",
+    "quest",
+    "why_reachable",
+    "constraints",
+    "requires_mutual_acceptance"
+  ],
+  "properties": {
+    "door_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "premise": { "type": "string", "minLength": 1 },
+    "quest": { "$ref": "quest.v0.json" },
+    "declared_perturbation": { "type": ["string", "null"] },
+    "why_reachable": { "type": "array", "items": { "type": "string" } },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "what_it_might_reveal": { "type": ["string", "null"] },
+    "requires_mutual_acceptance": { "const": true }
+  }
+}
