@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/encounter.v0.json",
+  "title": "LOVE Encounter v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["occurrence_id", "door_id", "participants", "observations", "artifacts", "unresolved"],
+  "properties": {
+    "occurrence_id": { "type": "string", "minLength": 1 },
+    "door_id": { "type": "string", "minLength": 1 },
+    "participants": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "started_at": { "type": ["string", "null"], "format": "date-time" },
+    "ended_at": { "type": ["string", "null"], "format": "date-time" },
+    "observations": { "type": "array", "items": { "type": "string" } },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "boundaries": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "questions_generated": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "unresolved": { "type": "array", "items": { "type": "string" } }
+  }
+}
