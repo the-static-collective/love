@@ -38,6 +38,36 @@ The intended human experience is closer to correspondence + field quests + 50 fi
 
 The intended mathematical behavior is closer to experimental comparison than compatibility scoring.
 
+## Run the specimen
+
+Runtime 001 is a zero-dependency local browser implementation of the first complete LOVE loop.
+
+Open:
+
+```text
+runtime/index.html
+```
+
+No build step, account, server, or network service is required.
+
+The runtime includes:
+
+- bounded person presence instead of profiles
+- private seed inputs
+- a shared first-letter prompt
+- two letters
+- mutual opening
+- Door 001
+- mutual door acceptance
+- an encounter receipt
+- `baseline@1`
+- relation inventory
+- nearby non-ranked doors
+- local persistence
+- JSON export
+
+See [runtime/README.md](./runtime/README.md) and [docs/RUNTIME-001.md](./docs/RUNTIME-001.md).
+
 ## First principles
 
 - PERSON != PROFILE
@@ -60,12 +90,14 @@ See [LAWS.md](./LAWS.md).
 
 ## Repository map
 
+- `runtime/` — executable Runtime 001
 - `docs/LOVE-LOOP-001.md` — lifecycle and state model
 - `docs/DOGRAM-RELATION-001.md` — perturbation operators for relations
 - `docs/FIRST-LETTER-001.md` — correspondence gate
 - `docs/QUESTS-001.md` — quest composer rules
 - `docs/FIFTY-FIRST-DATES-001.md` — re-entry without historical collapse
 - `docs/RELATION-INVENTORY-001.md` — the third thing between people
+- `docs/RUNTIME-001.md` — runtime boundary and next comparative step
 - `schemas/` — deliberately small v0 data contracts
 - `composer/door-composer.v0.md` — nearby-door generation contract
 - `examples/FIRST-CROSSING-001.md` — complete worked specimen
@@ -81,6 +113,10 @@ presence -> letter -> mutual open -> door -> quest -> encounter
 
 without ever requiring a compatibility score.
 
+Runtime 001 now walks that path.
+
 ## Status
 
-Genesis seed. Intentionally small.
+**Genesis runtime live.**
+
+The next meaningful boundary is Runtime 002: a second occurrence with one declared perturbation and a real categorical `delta@1`.
