@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/person-presence.v0.json",
+  "title": "LOVE Person Presence v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["participant_id", "constraints", "offered_threads", "held_private"],
+  "properties": {
+    "participant_id": { "type": "string", "minLength": 1 },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "offered_threads": { "type": "array", "items": { "type": "string" } },
+    "held_private": { "type": "boolean" }
+  }
+}
