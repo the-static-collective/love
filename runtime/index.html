@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LOVE Runtime 001</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">LOVE Runtime 001</p>
+      <h1>You have received a letter.</h1>
+      <p class="lede">
+        A tiny local-first courtship experiment: correspondence, doors, quests, and Dogram relation receipts.
+      </p>
+      <div class="law-strip">
+        <span>PERSON ≠ PROFILE</span>
+        <span>DOOR ≠ CROSSING</span>
+        <span>DOGRAM MEASURES TRANSFORMS, NOT PEOPLE</span>
+      </div>
+    </header>
+
+    <nav class="steps" aria-label="LOVE loop">
+      <button data-step="presence" class="active">1. Presence</button>
+      <button data-step="letters">2. Letters</button>
+      <button data-step="door">3. Door</button>
+      <button data-step="crossing">4. Crossing</button>
+      <button data-step="dogram">5. Dogram</button>
+      <button data-step="relation">6. Relation</button>
+    </nav>
+
+    <section id="presence" class="panel active">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Presence</p>
+          <h2>Offer threads, not profiles.</h2>
+        </div>
+        <button id="loadSample" class="ghost">Load Rowan + Mira</button>
+      </div>
+
+      <div class="two-col">
+        <form id="presenceA" class="card participant">
+          <p class="tag">Participant A</p>
+          <label>Name<input name="name" placeholder="Rowan" /></label>
+          <label>Constraints<textarea name="constraints" placeholder="public place&#10;daytime&#10;under $15"></textarea></label>
+          <label>Offered threads<textarea name="threads" placeholder="old buildings&#10;hand tools&#10;strange radio"></textarea></label>
+          <label>Private seed 1<textarea name="seed1" placeholder="Something you can teach with your hands"></textarea></label>
+          <label>Private seed 2<textarea name="seed2" placeholder="A place that changes how you think"></textarea></label>
+          <label>Private seed 3<textarea name="seed3" placeholder="A harmless thing you are irrationally delighted by"></textarea></label>
+        </form>
+
+        <form id="presenceB" class="card participant">
+          <p class="tag">Participant B</p>
+          <label>Name<input name="name" placeholder="Mira" /></label>
+          <label>Constraints<textarea name="constraints" placeholder="public place&#10;no alcohol&#10;easy exit route"></textarea></label>
+          <label>Offered threads<textarea name="threads" placeholder="thrift stores&#10;trains&#10;drawing"></textarea></label>
+          <label>Private seed 1<textarea name="seed1" placeholder="Something you can teach with your hands"></textarea></label>
+          <label>Private seed 2<textarea name="seed2" placeholder="A place that changes how you think"></textarea></label>
+          <label>Private seed 3<textarea name="seed3" placeholder="A harmless thing you are irrationally delighted by"></textarea></label>
+        </form>
+      </div>
+
+      <p class="privacy-note">
+        Private seeds stay in this browser state. The other participant sees only what is intentionally written into a letter.
+      </p>
+      <button id="savePresence" class="primary">Seal presence → compose letter prompt</button>
+    </section>
+
+    <section id="letters" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">First Letter</p>
+          <h2>Write to the person, not the profile.</h2>
+        </div>
+      </div>
+      <div class="prompt card">
+        <p class="tag">Shared prompt</p>
+        <blockquote id="letterPrompt">Complete Presence first.</blockquote>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <p class="tag" id="labelA">Participant A</p>
+          <textarea id="letterA" rows="12" placeholder="Write the letter here..."></textarea>
+          <label class="check"><input type="checkbox" id="openA" /> I choose to open a crossing.</label>
+        </div>
+        <div class="card">
+          <p class="tag" id="labelB">Participant B</p>
+          <textarea id="letterB" rows="12" placeholder="Write the letter here..."></textarea>
+          <label class="check"><input type="checkbox" id="openB" /> I choose to open a crossing.</label>
+        </div>
+      </div>
+
+      <button id="sealLetters" class="primary">Seal letters → attempt Door 001</button>
+      <p id="letterStatus" class="status"></p>
+    </section>
+
+    <section id="door" class="panel">
+      <p class="eyebrow">Door 001</p>
+      <div id="doorCard" class="door-card card muted">
+        <h2>No door is open yet.</h2>
+        <p>Mutual opening is required.</p>
+      </div>
+      <div class="accept-row">
+        <label class="check"><input type="checkbox" id="acceptA" /> <span id="acceptALabel">A</span> accepts this door.</label>
+        <label class="check"><input type="checkbox" id="acceptB" /> <span id="acceptBLabel">B</span> accepts this door.</label>
+      </div>
+      <button id="crossDoor" class="primary">Cross Door 001</button>
+      <p id="doorStatus" class="status"></p>
+    </section>
+
+    <section id="crossing" class="panel">
+      <p class="eyebrow">Encounter Receipt</p>
+      <h2>Record what happened. Do not diagnose the people.</h2>
+
+      <div class="card form-grid">
+        <label>Planned minutes<input id="plannedMinutes" type="number" min="0" value="45" /></label>
+        <label>Actual minutes<input id="actualMinutes" type="number" min="0" value="45" /></label>
+        <label class="span-2">Observed events<textarea id="observations" placeholder="one observation per line"></textarea></label>
+        <label class="span-2">Artifacts / relics<textarea id="artifacts" placeholder="ceramic duck&#10;train postcard"></textarea></label>
+        <label class="span-2">Questions generated<textarea id="questions" placeholder="Why trains?"></textarea></label>
+        <label class="span-2">Unresolved<textarea id="unresolved" placeholder="Did the shared task create the ease?"></textarea></label>
+      </div>
+
+      <button id="saveEncounter" class="primary">Receipt crossing → run Dogram baseline</button>
+      <p id="crossingStatus" class="status"></p>
+    </section>
+
+    <section id="dogram" class="panel">
+      <p class="eyebrow">Dogram</p>
+      <h2>What changed in the relation?</h2>
+      <div id="dogramReceipt" class="card receipt muted">
+        <p>No crossing receipt yet.</p>
+      </div>
+      <button id="carryResidual" class="primary">Carry residual → update relation inventory</button>
+    </section>
+
+    <section id="relation" class="panel">
+      <p class="eyebrow">The Third Thing</p>
+      <h2 id="relationTitle">Relation inventory</h2>
+
+      <div class="relation-grid">
+        <div class="card"><p class="tag">Relics</p><ul id="relicList"></ul></div>
+        <div class="card"><p class="tag">Recurring threads</p><ul id="threadList"></ul></div>
+        <div class="card"><p class="tag">Unresolved</p><ul id="unresolvedList"></ul></div>
+        <div class="card"><p class="tag">Reachable doors</p><ul id="doorList"></ul></div>
+      </div>
+
+      <div class="card">
+        <p class="tag">Nearby doors</p>
+        <div id="nearbyDoors" class="nearby"></div>
+      </div>
+
+      <div class="footer-actions">
+        <button id="exportState" class="ghost">Export relation JSON</button>
+        <button id="resetState" class="danger">Reset local runtime</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
