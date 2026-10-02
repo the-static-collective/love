@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/quest.v0.json",
+  "title": "LOVE Quest v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["quest_id", "premise", "constraints", "opt_outs", "completion_definition"],
+  "properties": {
+    "quest_id": { "type": "string", "minLength": 1 },
+    "premise": { "type": "string", "minLength": 1 },
+    "shared_object": { "type": ["string", "null"] },
+    "changed_variable": { "type": ["string", "null"] },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "opt_outs": { "type": "array", "items": { "type": "string" } },
+    "completion_definition": { "type": "string", "minLength": 1 },
+    "artifact_prompt": { "type": ["string", "null"] }
+  }
+}
