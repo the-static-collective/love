@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/relation.v0.json",
+  "title": "LOVE Relation v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["relation_id", "participants", "occurrences", "inventory"],
+  "properties": {
+    "relation_id": { "type": "string", "minLength": 1 },
+    "participants": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "occurrences": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/occurrence_ref" }
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relics", "recurring_threads", "unresolved", "mutually_reachable"],
+      "properties": {
+        "relics": { "type": "array", "items": { "type": "string" } },
+        "recurring_threads": { "type": "array", "items": { "type": "string" } },
+        "unresolved": { "type": "array", "items": { "type": "string" } },
+        "mutually_reachable": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "occurrence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["occurrence_id", "door_id"],
+      "properties": {
+        "occurrence_id": { "type": "string", "minLength": 1 },
+        "door_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
