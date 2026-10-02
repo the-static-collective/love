@@ -1,0 +1,96 @@
+# LOVE Laws
+
+These are architectural constraints, not marketing language.
+
+## Personhood
+
+**PERSON != PROFILE**
+
+A profile is a bounded offering for one context. It is never treated as the person.
+
+**OBSERVATION != IDENTITY**
+
+An observed behavior under one set of conditions cannot be promoted into a permanent claim about a participant.
+
+**PRIVATE != MISSING**
+
+A participant may withhold context. Absence from the shared relation record is not evidence of absence from the person.
+
+## Relation
+
+**RELATION != PERSON A + PERSON B**
+
+A relation can accumulate shared artifacts, recurring places, unresolved questions, and reachable doors that belong to neither person alone.
+
+**RELATION STATE != RELATION ESSENCE**
+
+The state is a receipt of what is presently known, not a verdict on what the relationship “is.”
+
+## Crossing
+
+**RECOMMENDATION != SELECTION**
+
+The composer may offer doors. Humans choose.
+
+**DOOR != CROSSING**
+
+A proposed encounter is not an event until participants actually cross it.
+
+**SAME SETTING != SAME OCCURRENCE**
+
+Returning to the same cafe, trail, question, or ritual creates a new historical occurrence.
+
+**SAME OUTCOME != SAME PATH**
+
+Similar endpoints may have different histories and must not be collapsed.
+
+## Dogram
+
+**DOGRAM MEASURES TRANSFORMS, NOT PEOPLE**
+
+Perturbations apply to encounters, conditions, and relation state. They do not compute human worth.
+
+**CHANGE ONE THING WHEN POSSIBLE**
+
+Prefer bounded probes whose changed variable is explicit.
+
+**RESIDUAL != FAILURE**
+
+Unexpected difference is information.
+
+**SURPRISE != INCOMPATIBILITY**
+
+A violated prediction opens inquiry; it does not authorize a global judgment.
+
+## Memory
+
+**MEMORY != AUTHORITY**
+
+Recorded history can inform future doors but cannot decide for either participant.
+
+**HISTORY MAY INFORM != HISTORY MAY DECIDE**
+
+No previous encounter forces a future interpretation.
+
+**KEEP / RELEASE / REDISCOVER**
+
+Participants control which memories are actively carried forward. Released context may be retained only according to the privacy/retention policy of an implementation.
+
+## Product prohibitions
+
+v0 has no first-class datatype named or equivalent to:
+
+- compatibility_score
+- desirability_score
+- attractiveness_rank
+- human_rank
+- match_percentage
+- relationship_grade
+
+No leaderboard of people.
+
+No infinite swipe feed.
+
+No hidden behavioral auction.
+
+No claim that observed interaction reveals a participant's essential nature.
