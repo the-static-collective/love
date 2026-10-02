@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/letter.v0.json",
+  "title": "LOVE Letter v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["letter_id", "from_participant", "to_participant", "body", "consent_to_deliver"],
+  "properties": {
+    "letter_id": { "type": "string", "minLength": 1 },
+    "from_participant": { "type": "string", "minLength": 1 },
+    "to_participant": { "type": "string", "minLength": 1 },
+    "prompt_id": { "type": ["string", "null"] },
+    "body": { "type": "string", "minLength": 1 },
+    "artifact_refs": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "consent_to_deliver": { "const": true }
+  }
+}
