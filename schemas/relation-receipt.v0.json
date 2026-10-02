@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/relation-receipt.v0.json",
+  "title": "LOVE Relation Receipt v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_id",
+    "relation_id",
+    "occurrence_id",
+    "source",
+    "shared_facts",
+    "system_hypotheses",
+    "participant_corrections"
+  ],
+  "properties": {
+    "receipt_id": { "type": "string", "minLength": 1 },
+    "relation_id": { "type": "string", "minLength": 1 },
+    "occurrence_id": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["participant", "joint", "system"] },
+        "participant_id": { "type": ["string", "null"] }
+      }
+    },
+    "shared_facts": { "type": "array", "items": { "type": "string" } },
+    "system_hypotheses": { "type": "array", "items": { "type": "string" } },
+    "participant_corrections": { "type": "array", "items": { "type": "string" } },
+    "carry_forward": { "type": "array", "items": { "type": "string" }, "default": [] }
+  }
+}
