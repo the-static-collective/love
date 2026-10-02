@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/dogram-probe.v0.json",
+  "title": "LOVE Dogram Probe v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "probe_id",
+    "operator",
+    "occurrence_ids",
+    "residual"
+  ],
+  "properties": {
+    "probe_id": { "type": "string", "minLength": 1 },
+    "operator": {
+      "type": "string",
+      "enum": ["baseline@1", "delta@1", "rectangle@1", "ablate@1", "reach@1", "reenter@1"]
+    },
+    "declared_perturbation": { "type": ["string", "null"] },
+    "occurrence_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "residual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed",
+        "persisted",
+        "appeared",
+        "disappeared",
+        "became_reachable",
+        "became_unreachable",
+        "unresolved"
+      ],
+      "properties": {
+        "changed": { "type": "array", "items": { "type": "string" } },
+        "persisted": { "type": "array", "items": { "type": "string" } },
+        "appeared": { "type": "array", "items": { "type": "string" } },
+        "disappeared": { "type": "array", "items": { "type": "string" } },
+        "became_reachable": { "type": "array", "items": { "type": "string" } },
+        "became_unreachable": { "type": "array", "items": { "type": "string" } },
+        "unresolved": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
