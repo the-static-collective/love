@@ -282,3 +282,97 @@ blockquote {
 .return-card .nearby {
   margin-top: 14px;
 }
+
+
+.lede-small {
+  max-width: 720px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.mail-status,
+.incoming-mail,
+.world-card {
+  margin-bottom: 18px;
+}
+
+.mail-route {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.mail-route > div {
+  display: grid;
+  gap: 4px;
+}
+
+.mail-arrow {
+  font-size: 28px;
+  color: var(--muted);
+  align-self: center;
+}
+
+.mail-door {
+  margin-top: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.mail-door legend {
+  padding: 0 8px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.mail-decisions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mail-decisions .primary {
+  margin-top: 0;
+}
+
+.mail-turn {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.mail-turn:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.mail-turn blockquote {
+  font-size: 18px;
+  margin: 8px 0;
+}
+
+.status-pill {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .mail-route {
+    grid-template-columns: 1fr;
+  }
+
+  .mail-arrow {
+    transform: rotate(90deg);
+    justify-self: start;
+  }
+}
