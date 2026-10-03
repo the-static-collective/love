@@ -1,4 +1,4 @@
-# LOVE Runtime 004
+# LOVE Runtime 005
 
 A zero-dependency browser specimen for the LOVE protocol.
 
@@ -10,84 +10,100 @@ No build step.
 No server required.
 No network required after the files are present.
 
-## What Runtime 004 proves
+## What Runtime 005 proves
 
-Runtime 004 keeps the previous encounter history and adds a true correspondence state machine:
+Runtime 005 closes the mail-to-world loop:
 
 ```text
-compose letter turn
--> seal
--> deliver
--> recipient chooses open / hold / decline
--> authorized payload enters relation only on open
--> recipient becomes next sender
--> repeat
+letter turn
+-> opened door proposal
+-> accept / alter / decline
+-> mutual composition
+-> real Door
+-> fresh crossing consent
+-> occurrence 004
+-> delta@1
+-> relation update
 ```
 
 State is stored under:
 
 ```text
-love-runtime-004
+love-runtime-005
 ```
 
-Runtime 004 migrates older Runtime 003, 002, and 001 saves.
+Runtime 005 migrates Runtime 004, 003, 002, and 001 saves.
 
-## Mail payload
+## Negotiation model
 
-A turn can carry:
+Each mail offer has a current revision.
 
-- a letter body
-- one explicit reveal
-- one enclosed artifact
-- one possible door proposal
+The participant who authored that revision is treated as consenting to that revision.
 
-The packet remains sealed in the recipient interface until opened.
+The other participant holds the response.
 
-## World mutation
+They may:
 
-`DELIVERY != OPENING`
+- accept the current revision unchanged
+- alter it into a new counterproposal
+- decline it
 
-Sending changes transport state, not relation state.
-
-`HOLD` changes neither relation state nor turn ownership.
-
-`DECLINE UNOPENED` resolves the turn without admitting payload.
-
-`OPEN` may add only explicitly enclosed material to the shared relation.
-
-## Proposal law
-
-A proposal arriving by mail is not promoted directly into a Door:
+An alteration creates a new revision and flips the response to the other participant.
 
 ```text
-PROPOSAL != DOOR
+ACCEPTANCE APPLIES TO A REVISION
+ALTERATION INVALIDATES PRIOR ACCEPTANCE
+```
+
+## Promotion
+
+An accepted revision is promoted into a real Door.
+
+That promotion records:
+
+- source mail proposal id
+- source mail revision
+- prior occurrence used for the next Dogram comparison
+
+Promotion is not a crossing.
+
+```text
+MUTUAL COMPOSITION != CROSSING
 DOOR != CROSSING
 ```
 
-Runtime 004 records opened door proposals in `mail_offers` for later composition.
+Both participants must still explicitly accept the composed Door before occurrence 004 can be receipted.
 
-## Sims by mail
+## Mail-origin delta
 
-At this point the phrase is literal architecture:
+After occurrence 004, Runtime 005 compares it to the source occurrence captured when the Door was composed.
+
+The result is a normal categorical `delta@1` receipt.
+
+No compatibility score is created.
+
+## Transport immutability
+
+The proposal carried by an opened letter is copied into relation state before negotiation.
+
+Negotiating the relation copy does not rewrite the historical delivered packet.
 
 ```text
-LETTER = TURN PACKET
-RELATION = SAVE FILE
-OPEN = AUTHORIZED WORLD MUTATION
+TRANSPORT HISTORY != NEGOTIATION STATE
 ```
-
-The humans remain outside the game-state model.
 
 ## Next useful increment
 
-Runtime 005 can make mail offers negotiable:
+Runtime 006 can make multiple simultaneously reachable Doors and mail offers form a small **world map**:
 
 ```text
-mail offer
--> accept / alter / decline
--> mutual composition
--> real Door
--> crossing
+letters
+-> relics
+-> unresolved threads
+-> negotiated doors
+-> crossed places
+-> returnable places
+-> map of the relation
 ```
 
-That would connect turn-based correspondence directly back into the Dogram encounter loop.
+That is where the save file starts looking like a tiny shared world instead of a linear transcript.
