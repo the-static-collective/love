@@ -31,7 +31,7 @@ PERSON B ─┘
               ↓
        REACHABLE DOORS
               ↓
-         NEXT LETTER
+         NEXT CROSSING
 ```
 
 The intended human experience is closer to correspondence + field quests + 50 first dates than swipe-based dating.
@@ -40,7 +40,7 @@ The intended mathematical behavior is closer to experimental comparison than com
 
 ## Run the specimen
 
-Runtime 001 is a zero-dependency local browser implementation of the first complete LOVE loop.
+**Runtime 002** is a zero-dependency local browser implementation of the first comparative LOVE loop.
 
 Open:
 
@@ -50,23 +50,31 @@ runtime/index.html
 
 No build step, account, server, or network service is required.
 
-The runtime includes:
+It now walks:
 
-- bounded person presence instead of profiles
-- private seed inputs
-- a shared first-letter prompt
-- two letters
-- mutual opening
-- Door 001
-- mutual door acceptance
-- an encounter receipt
-- `baseline@1`
-- relation inventory
-- nearby non-ranked doors
-- local persistence
-- JSON export
+```text
+presence
+-> letters
+-> Door 001
+-> occurrence 001
+-> baseline@1
+-> relation inventory
+-> non-ranked Door 002 selection
+-> occurrence 002
+-> delta@1
+-> updated relation inventory
+```
 
-See [runtime/README.md](./runtime/README.md) and [docs/RUNTIME-001.md](./docs/RUNTIME-001.md).
+The second occurrence must declare its perturbation before it is receipted.
+
+The comparison obeys:
+
+```text
+OMISSION != NONEXISTENCE
+RESOLUTION REQUIRES A RECEIPT
+```
+
+See [runtime/README.md](./runtime/README.md), [docs/RUNTIME-001.md](./docs/RUNTIME-001.md), and [docs/RUNTIME-002.md](./docs/RUNTIME-002.md).
 
 ## First principles
 
@@ -79,6 +87,7 @@ See [runtime/README.md](./runtime/README.md) and [docs/RUNTIME-001.md](./docs/RU
 - SAME OUTCOME != SAME PATH
 - RESIDUAL != FAILURE
 - SURPRISE != INCOMPATIBILITY
+- OMISSION != NONEXISTENCE
 - MEMORY != AUTHORITY
 - HISTORY MAY INFORM != HISTORY MAY DECIDE
 - DOGRAM MEASURES TRANSFORMS, NOT PEOPLE
@@ -90,33 +99,22 @@ See [LAWS.md](./LAWS.md).
 
 ## Repository map
 
-- `runtime/` — executable Runtime 001
+- `runtime/` — executable Runtime 002
 - `docs/LOVE-LOOP-001.md` — lifecycle and state model
 - `docs/DOGRAM-RELATION-001.md` — perturbation operators for relations
 - `docs/FIRST-LETTER-001.md` — correspondence gate
 - `docs/QUESTS-001.md` — quest composer rules
 - `docs/FIFTY-FIRST-DATES-001.md` — re-entry without historical collapse
 - `docs/RELATION-INVENTORY-001.md` — the third thing between people
-- `docs/RUNTIME-001.md` — runtime boundary and next comparative step
+- `docs/RUNTIME-001.md` — baseline runtime
+- `docs/RUNTIME-002.md` — first comparative runtime
 - `schemas/` — deliberately small v0 data contracts
 - `composer/door-composer.v0.md` — nearby-door generation contract
-- `examples/FIRST-CROSSING-001.md` — complete worked specimen
-
-## v0 success condition
-
-A v0 implementation succeeds when two fictional participants can move through:
-
-```text
-presence -> letter -> mutual open -> door -> quest -> encounter
--> receipt -> dogram probe -> residual -> reachable doors
-```
-
-without ever requiring a compatibility score.
-
-Runtime 001 now walks that path.
+- `examples/FIRST-CROSSING-001.md` — baseline specimen
+- `examples/SECOND-CROSSING-001.md` — first real delta specimen
 
 ## Status
 
-**Genesis runtime live.**
+**Runtime 002 live.**
 
-The next meaningful boundary is Runtime 002: a second occurrence with one declared perturbation and a real categorical `delta@1`.
+The next clean boundary is `reenter@1`: make a prior door newly crossable as a fresh historical occurrence.
