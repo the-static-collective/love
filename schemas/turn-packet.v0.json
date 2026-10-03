@@ -13,46 +13,88 @@
     "created_after_occurrence_count"
   ],
   "properties": {
-    "turn_id": { "type": "string", "minLength": 1 },
-    "sender_participant": { "type": "string", "minLength": 1 },
-    "recipient_participant": { "type": "string", "minLength": 1 },
+    "turn_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sender_participant": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recipient_participant": {
+      "type": "string",
+      "minLength": 1
+    },
     "status": {
       "type": "string",
-      "enum": ["delivered", "held", "opened", "declined"]
+      "enum": [
+        "delivered",
+        "held",
+        "opened",
+        "declined"
+      ]
     },
-    "created_after_occurrence_count": { "type": "integer", "minimum": 0 },
-    "letter": { "$ref": "letter.v0.json" },
-    "explicit_reveal": { "type": "string", "default": "" },
-    "enclosed_artifact": { "type": "string", "default": "" },
+    "created_after_occurrence_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "letter": {
+      "$ref": "letter.v0.json"
+    },
+    "explicit_reveal": {
+      "type": "string",
+      "default": ""
+    },
+    "enclosed_artifact": {
+      "type": "string",
+      "default": ""
+    },
     "door_proposal": {
       "oneOf": [
-        { "type": "null" },
         {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["proposal_id", "title", "premise", "status"],
-          "properties": {
-            "proposal_id": { "type": "string", "minLength": 1 },
-            "title": { "type": "string", "minLength": 1 },
-            "premise": { "type": "string", "minLength": 1 },
-            "declared_perturbation": { "type": ["string", "null"] },
-            "status": { "const": "proposed" }
-          }
+          "type": "null"
+        },
+        {
+          "$ref": "mail-offer.v0.json"
         }
       ]
     },
-    "resolved_without_opening": { "type": "boolean", "default": false },
+    "resolved_without_opening": {
+      "type": "boolean",
+      "default": false
+    },
     "opened_effects": {
       "oneOf": [
-        { "type": "null" },
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["revealed_threads_added", "relics_added", "mail_offers_added"],
+          "required": [
+            "revealed_threads_added",
+            "relics_added",
+            "mail_offers_added"
+          ],
           "properties": {
-            "revealed_threads_added": { "type": "array", "items": { "type": "string" } },
-            "relics_added": { "type": "array", "items": { "type": "string" } },
-            "mail_offers_added": { "type": "array", "items": { "type": "string" } }
+            "revealed_threads_added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "relics_added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "mail_offers_added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       ]
