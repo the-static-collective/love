@@ -1,4 +1,5 @@
-const STORAGE_KEY = "love-runtime-005";
+const STORAGE_KEY = "love-runtime-006";
+const LEGACY_KEY_005 = "love-runtime-005";
 const LEGACY_KEY_004 = "love-runtime-004";
 const LEGACY_KEY_003 = "love-runtime-003";
 const LEGACY_KEY_002 = "love-runtime-002";
@@ -20,7 +21,7 @@ const sample = {
 };
 
 const emptyState = () => ({
-  version: "love-runtime-005",
+  version: "love-runtime-006",
   participants: { A: null, B: null },
   letters: { prompt: "", A: "", B: "", openA: false, openB: false },
   firstDoor: null,
@@ -50,7 +51,8 @@ const emptyState = () => ({
     unresolved: [],
     mutually_reachable: [],
     mail_offers: [],
-    opened_mail_turns: []
+    opened_mail_turns: [],
+    places: []
   }
 });
 
@@ -130,6 +132,15 @@ function normalizeLoadedState(raw) {
     };
   });
   base.relation.opened_mail_turns = base.relation.opened_mail_turns || [];
+  base.relation.places = (base.relation.places || []).map((place, index) => ({
+    place_id: place.place_id || `place-${String(index + 1).padStart(3, "0")}`,
+    name: place.name || `Place ${index + 1}`,
+    source_occurrence_ids: place.source_occurrence_ids || [],
+    relics: place.relics || [],
+    unresolved: place.unresolved || [],
+    reachable_from_here: place.reachable_from_here || [],
+    formed_after_occurrence_count: place.formed_after_occurrence_count ?? base.relation.occurrence_count
+  }));
   return base;
 }
 
@@ -140,12 +151,23 @@ function loadState() {
     const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (current) return normalizeLoadedState(current);
 
+    const v5 = JSON.parse(localStorage.getItem(LEGACY_KEY_005));
+    if (v5) {
+      const migrated = normalizeLoadedState({
+        ...emptyState(),
+        ...v5,
+        version: "love-runtime-006"
+      });
+      saveRaw(migrated);
+      return migrated;
+    }
+
     const v4 = JSON.parse(localStorage.getItem(LEGACY_KEY_004));
     if (v4) {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v4,
-        version: "love-runtime-005",
+        version: "love-runtime-006",
         selected_offer_id: null,
         mailDoor: null,
         mailDoorAccepted: { A: false, B: false },
@@ -160,7 +182,7 @@ function loadState() {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v3,
-        version: "love-runtime-005",
+        version: "love-runtime-006",
         mail: { next_sender: "A", turns: [] }
       });
       saveRaw(migrated);
@@ -172,7 +194,7 @@ function loadState() {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v2,
-        version: "love-runtime-005",
+        version: "love-runtime-006",
         reentryDoor: null,
         reentryDoorAccepted: { A: false, B: false },
         reentryApplied: false,
@@ -586,6 +608,139 @@ function renderMailHistory(turns) {
   }).join("");
 }
 
+function allRuntimeDoors() {
+  return [
+    state.firstDoor,
+    state.nextDoor,
+    state.reentryDoor,
+    state.mailDoor
+  ].filter(Boolean);
+}
+
+function doorByRuntimeId(doorId) {
+  return allRuntimeDoors().find(door => door.door_id === doorId) || null;
+}
+
+function worldNode(kind, id, title, detail = "") {
+  return `
+    <div class="world-node" data-kind="${escapeHtml(kind)}" data-id="${escapeHtml(id)}">
+      <p class="tag">${escapeHtml(kind)}</p>
+      <p><strong>${escapeHtml(title)}</strong></p>
+      ${detail ? `<p>${escapeHtml(detail)}</p>` : ""}
+    </div>
+  `;
+}
+
+function worldEdge(from, relation, to) {
+  return `
+    <div class="world-edge">
+      <span>${escapeHtml(from)}</span>
+      <span class="edge-arrow">— ${escapeHtml(relation)} →</span>
+      <span>${escapeHtml(to)}</span>
+    </div>
+  `;
+}
+
+function deriveWorld() {
+  const mailbox = [];
+  const room = [];
+  const horizon = [];
+  const edges = [];
+
+  for (const turn of state.mail?.turns || []) {
+    if (["delivered", "held"].includes(turn.status)) {
+      mailbox.push(worldNode("mail", turn.turn_id, `${participantName(turn.sender_participant)} → ${participantName(turn.recipient_participant)}`, turn.status));
+    }
+    if (turn.status === "opened") {
+      room.push(worldNode("opened mail", turn.turn_id, `${participantName(turn.sender_participant)} → ${participantName(turn.recipient_participant)}`, "opened into shared history"));
+    }
+    if (turn.door_proposal) {
+      edges.push(worldEdge(turn.turn_id, "carried proposal", turn.door_proposal.proposal_id));
+    }
+  }
+
+  for (const offer of state.relation.mail_offers || []) {
+    const detail = `r${offer.revision} · ${offer.status}`;
+    if (["proposed", "countered"].includes(offer.status)) {
+      mailbox.push(worldNode("proposal", offer.proposal_id, offer.title, detail));
+    } else if (["promoted", "accepted"].includes(offer.status)) {
+      room.push(worldNode("composed proposal", offer.proposal_id, offer.title, detail));
+    }
+    if (state.mailDoor?.source_mail_proposal_id === offer.proposal_id) {
+      edges.push(worldEdge(`${offer.proposal_id}@r${state.mailDoor.source_mail_revision}`, "became", state.mailDoor.door_id));
+    }
+  }
+
+  for (const occurrence of state.occurrences || []) {
+    const door = doorByRuntimeId(occurrence.door_id);
+    room.push(worldNode("occurrence", occurrence.occurrence_id, door?.title || occurrence.door_id, `${occurrence.actual_minutes ?? 0} min`));
+    edges.push(worldEdge(occurrence.door_id, "crossed as", occurrence.occurrence_id));
+
+    for (const artifact of occurrence.artifacts || []) {
+      edges.push(worldEdge(occurrence.occurrence_id, "left relic", artifact));
+    }
+    for (const question of occurrence.questions_generated || []) {
+      edges.push(worldEdge(occurrence.occurrence_id, "opened question", question));
+    }
+  }
+
+  for (const relic of state.relation.relics || []) {
+    room.push(worldNode("relic", `relic:${normalize(relic)}`, relic));
+  }
+
+  for (const reveal of state.relation.revealed_threads || []) {
+    room.push(worldNode("revealed thread", `thread:${normalize(reveal)}`, reveal));
+  }
+
+  for (const place of state.relation.places || []) {
+    room.push(worldNode("place", place.place_id, place.name, `${place.source_occurrence_ids.length} occurrence source(s)`));
+    for (const occurrenceId of place.source_occurrence_ids) {
+      edges.push(worldEdge(occurrenceId, "formed", place.name));
+    }
+    for (const relic of place.relics) {
+      edges.push(worldEdge(relic, "held by", place.name));
+    }
+    for (const question of place.unresolved) {
+      edges.push(worldEdge(question, "lingers in", place.name));
+    }
+    for (const reachable of place.reachable_from_here) {
+      edges.push(worldEdge(place.name, "reachable", reachable));
+    }
+  }
+
+  for (const reachable of state.relation.mutually_reachable || []) {
+    horizon.push(worldNode("reachable door", `reachable:${normalize(reachable)}`, reachable));
+  }
+
+  for (const unresolved of state.relation.unresolved || []) {
+    horizon.push(worldNode("unresolved", `unresolved:${normalize(unresolved)}`, unresolved));
+  }
+
+  for (const door of allRuntimeDoors()) {
+    const crossed = (state.occurrences || []).some(o => o.door_id === door.door_id);
+    if (!crossed) {
+      horizon.push(worldNode("uncrossed door", door.door_id, door.title, door.declared_perturbation || ""));
+    }
+  }
+
+  for (const probe of state.probes || []) {
+    if ((probe.occurrence_ids || []).length >= 2) {
+      edges.push(worldEdge(probe.occurrence_ids[0], probe.operator, probe.occurrence_ids[1]));
+    }
+  }
+
+  return {
+    mailbox: unique(mailbox),
+    room: unique(room),
+    horizon: unique(horizon),
+    edges: unique(edges)
+  };
+}
+
+function nextPlaceId() {
+  return `place-${String((state.relation.places || []).length + 1).padStart(3, "0")}`;
+}
+
 function negotiableOffers() {
   return (state.relation.mail_offers || []).filter(offer =>
     ["proposed", "countered"].includes(offer.status)
@@ -963,6 +1118,62 @@ function render() {
        <p>${escapeHtml(state.mailDoor.premise)}</p>
        <p><strong>Declared perturbation:</strong> ${escapeHtml(state.mailDoor.declared_perturbation || "none")}</p>`
     : "<p>No composed mail Door exists.</p>";
+
+  const world = deriveWorld();
+  document.querySelector("#worldMailbox").innerHTML =
+    world.mailbox.length ? world.mailbox.join("") : '<div class="world-node muted"><p>Nothing is currently in transit.</p></div>';
+  document.querySelector("#worldRoom").innerHTML =
+    world.room.length ? world.room.join("") : '<div class="world-node muted"><p>The Room is still empty.</p></div>';
+  document.querySelector("#worldHorizon").innerHTML =
+    world.horizon.length ? world.horizon.join("") : '<div class="world-node muted"><p>No reachable future has been receipted yet.</p></div>';
+  document.querySelector("#worldEdges").innerHTML =
+    world.edges.length ? world.edges.join("") : "<p>No relation paths yet.</p>";
+
+  document.querySelector("#placeOccurrenceChoices").innerHTML =
+    (state.occurrences || []).length
+      ? state.occurrences.map(o => `
+          <label>
+            <input type="checkbox" name="placeOccurrence" value="${escapeHtml(o.occurrence_id)}" />
+            <span>${escapeHtml(o.occurrence_id)} · ${escapeHtml(doorByRuntimeId(o.door_id)?.title || o.door_id)}</span>
+          </label>
+        `).join("")
+      : "<p class='muted'>No occurrences yet.</p>";
+
+  document.querySelector("#placeRelicChoices").innerHTML =
+    (state.relation.relics || []).length
+      ? state.relation.relics.map((relic, index) => `
+          <label>
+            <input type="checkbox" name="placeRelic" value="${index}" />
+            <span>${escapeHtml(relic)}</span>
+          </label>
+        `).join("")
+      : "<p class='muted'>No relics yet.</p>";
+
+  document.querySelector("#placeQuestionChoices").innerHTML =
+    (state.relation.unresolved || []).length
+      ? state.relation.unresolved.map((question, index) => `
+          <label>
+            <input type="checkbox" name="placeQuestion" value="${index}" />
+            <span>${escapeHtml(question)}</span>
+          </label>
+        `).join("")
+      : "<p class='muted'>No unresolved questions yet.</p>";
+
+  document.querySelector("#formedPlaces").innerHTML =
+    (state.relation.places || []).length
+      ? state.relation.places.map(place => `
+          <article class="place-card">
+            <p class="tag">${escapeHtml(place.place_id)}</p>
+            <h3>${escapeHtml(place.name)}</h3>
+            <p><strong>Occurrences:</strong> ${place.source_occurrence_ids.map(escapeHtml).join(", ") || "none"}</p>
+            <p><strong>Relics:</strong> ${place.relics.map(escapeHtml).join(", ") || "none"}</p>
+            <p><strong>Unresolved:</strong> ${place.unresolved.map(escapeHtml).join(" · ") || "none"}</p>
+            <div class="place-links">
+              ${place.reachable_from_here.map(v => `<span>${escapeHtml(v)}</span>`).join("")}
+            </div>
+          </article>
+        `).join("")
+      : "<p>No places have formed yet.</p>";
 }
 
 document.querySelectorAll(".steps button").forEach(button => {
@@ -1748,12 +1959,93 @@ document.querySelector("#carryMailDelta").addEventListener("click", () => {
   showStep("relation");
 });
 
+document.querySelector("#formPlace").addEventListener("click", () => {
+  const status = document.querySelector("#placeStatus");
+  const name = document.querySelector("#placeName").value.trim();
+  const occurrenceIds = [...document.querySelectorAll('input[name="placeOccurrence"]:checked')].map(el => el.value);
+  const relicIndexes = [...document.querySelectorAll('input[name="placeRelic"]:checked')].map(el => Number(el.value));
+  const questionIndexes = [...document.querySelectorAll('input[name="placeQuestion"]:checked')].map(el => Number(el.value));
+
+  const relics = relicIndexes.map(i => state.relation.relics[i]).filter(Boolean);
+  const unresolved = questionIndexes.map(i => state.relation.unresolved[i]).filter(Boolean);
+
+  if (!name) {
+    status.textContent = "A formed place needs a name.";
+    return;
+  }
+
+  if (!occurrenceIds.length && !relics.length && !unresolved.length) {
+    status.textContent = "Select at least one historical source. LOVE does not invent a place from nothing.";
+    return;
+  }
+
+  const place = {
+    place_id: nextPlaceId(),
+    name,
+    source_occurrence_ids: unique(occurrenceIds),
+    relics: unique(relics),
+    unresolved: unique(unresolved),
+    reachable_from_here: unique([...(state.relation.mutually_reachable || [])]),
+    formed_after_occurrence_count: state.relation.occurrence_count
+  };
+
+  state.relation.places = [...(state.relation.places || []), place];
+  document.querySelector("#placeName").value = "";
+  status.textContent = `${place.name} formed from explicitly selected history.`;
+  saveState();
+  render();
+});
+
+document.querySelector("#seedWorldSpecimen").addEventListener("click", () => {
+  const status = document.querySelector("#placeStatus");
+  const already = (state.relation.places || []).find(p => p.name === "The Postcard Table");
+  if (already) {
+    status.textContent = "The Postcard Table already exists.";
+    showStep("world");
+    return;
+  }
+
+  const occurrence = state.occurrences.find(o => o.occurrence_id === "occurrence-004")
+    || [...state.occurrences].reverse()[0];
+
+  if (!occurrence) {
+    status.textContent = "A crossing must exist before the specimen place can form.";
+    showStep("world");
+    return;
+  }
+
+  const postcardRelics = (state.relation.relics || []).filter(v =>
+    v.toLowerCase().includes("postcard")
+  );
+  const travelQuestions = (state.relation.unresolved || []).filter(v =>
+    v.toLowerCase().includes("place") || v.toLowerCase().includes("future")
+  );
+
+  state.relation.places = [
+    ...(state.relation.places || []),
+    {
+      place_id: nextPlaceId(),
+      name: "The Postcard Table",
+      source_occurrence_ids: [occurrence.occurrence_id],
+      relics: postcardRelics,
+      unresolved: travelQuestions,
+      reachable_from_here: unique([...(state.relation.mutually_reachable || [])]),
+      formed_after_occurrence_count: state.relation.occurrence_count
+    }
+  ];
+
+  status.textContent = "A place has formed: The Postcard Table.";
+  saveState();
+  render();
+  showStep("world");
+});
+
 document.querySelector("#exportState").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "love-relation-005.json";
+  a.download = "love-relation-006.json";
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -1762,6 +2054,7 @@ document.querySelector("#resetState").addEventListener("click", () => {
   if (!confirm("Reset the local LOVE runtime state?")) return;
   state = emptyState();
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(LEGACY_KEY_005);
   localStorage.removeItem(LEGACY_KEY_004);
   localStorage.removeItem(LEGACY_KEY_003);
   localStorage.removeItem(LEGACY_KEY_002);
