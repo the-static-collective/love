@@ -4,7 +4,15 @@
   "title": "LOVE Encounter v0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["occurrence_id", "door_id", "participants", "observations", "artifacts", "unresolved"],
+  "required": [
+    "occurrence_id",
+    "door_id",
+    "participants",
+    "observations",
+    "artifacts",
+    "questions_generated",
+    "unresolved"
+  ],
   "properties": {
     "occurrence_id": { "type": "string", "minLength": 1 },
     "door_id": { "type": "string", "minLength": 1 },
@@ -16,10 +24,18 @@
     },
     "started_at": { "type": ["string", "null"], "format": "date-time" },
     "ended_at": { "type": ["string", "null"], "format": "date-time" },
+    "planned_minutes": { "type": ["number", "null"], "minimum": 0 },
+    "actual_minutes": { "type": ["number", "null"], "minimum": 0 },
     "observations": { "type": "array", "items": { "type": "string" } },
     "artifacts": { "type": "array", "items": { "type": "string" } },
     "boundaries": { "type": "array", "items": { "type": "string" }, "default": [] },
-    "questions_generated": { "type": "array", "items": { "type": "string" }, "default": [] },
-    "unresolved": { "type": "array", "items": { "type": "string" } }
+    "questions_generated": { "type": "array", "items": { "type": "string" } },
+    "unresolved": { "type": "array", "items": { "type": "string" } },
+    "resolved_previous": {
+      "description": "Prior unresolved items participants explicitly mark resolved. Omission never implies resolution.",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    }
   }
 }
