@@ -1,4 +1,5 @@
-const STORAGE_KEY = "love-runtime-004";
+const STORAGE_KEY = "love-runtime-005";
+const LEGACY_KEY_004 = "love-runtime-004";
 const LEGACY_KEY_003 = "love-runtime-003";
 const LEGACY_KEY_002 = "love-runtime-002";
 const LEGACY_KEY_001 = "love-runtime-001";
@@ -19,7 +20,7 @@ const sample = {
 };
 
 const emptyState = () => ({
-  version: "love-runtime-004",
+  version: "love-runtime-005",
   participants: { A: null, B: null },
   letters: { prompt: "", A: "", B: "", openA: false, openB: false },
   firstDoor: null,
@@ -37,6 +38,10 @@ const emptyState = () => ({
     next_sender: "A",
     turns: []
   },
+  selected_offer_id: null,
+  mailDoor: null,
+  mailDoorAccepted: { A: false, B: false },
+  mailDeltaApplied: false,
   relation: {
     occurrence_count: 0,
     relics: [],
@@ -76,6 +81,7 @@ function normalizeLoadedState(raw) {
   base.firstDoor = normalizeDoorContract(base.firstDoor, "quest-001");
   base.nextDoor = normalizeDoorContract(base.nextDoor, "quest-002");
   base.reentryDoor = normalizeDoorContract(base.reentryDoor, "quest-003");
+  base.mailDoor = normalizeDoorContract(base.mailDoor, "quest-mail-001");
   const participantNames = [
     base.participants?.A?.name || "Participant A",
     base.participants?.B?.name || "Participant B"
@@ -103,7 +109,23 @@ function normalizeLoadedState(raw) {
   };
   base.relation = { ...emptyState().relation, ...(base.relation || {}) };
   base.relation.revealed_threads = base.relation.revealed_threads || [];
-  base.relation.mail_offers = base.relation.mail_offers || [];
+  base.relation.mail_offers = (base.relation.mail_offers || []).map((offer, index) => {
+    const proposedBy = offer.proposed_by_participant || "A";
+    const awaiting = offer.awaiting_participant || otherParticipant(proposedBy);
+    return {
+      ...offer,
+      status: offer.status || "proposed",
+      proposed_by_participant: proposedBy,
+      current_author: offer.current_author || proposedBy,
+      awaiting_participant: ["accepted", "declined", "promoted"].includes(offer.status) ? null : awaiting,
+      revision: Number.isInteger(offer.revision) ? offer.revision : 0,
+      history: offer.history || [{
+        action: "proposed",
+        by: proposedBy,
+        revision: Number.isInteger(offer.revision) ? offer.revision : 0
+      }]
+    };
+  });
   base.relation.opened_mail_turns = base.relation.opened_mail_turns || [];
   return base;
 }
@@ -115,12 +137,27 @@ function loadState() {
     const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (current) return normalizeLoadedState(current);
 
+    const v4 = JSON.parse(localStorage.getItem(LEGACY_KEY_004));
+    if (v4) {
+      const migrated = normalizeLoadedState({
+        ...emptyState(),
+        ...v4,
+        version: "love-runtime-005",
+        selected_offer_id: null,
+        mailDoor: null,
+        mailDoorAccepted: { A: false, B: false },
+        mailDeltaApplied: false
+      });
+      saveRaw(migrated);
+      return migrated;
+    }
+
     const v3 = JSON.parse(localStorage.getItem(LEGACY_KEY_003));
     if (v3) {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v3,
-        version: "love-runtime-004",
+        version: "love-runtime-005",
         mail: { next_sender: "A", turns: [] }
       });
       saveRaw(migrated);
@@ -132,7 +169,7 @@ function loadState() {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v2,
-        version: "love-runtime-004",
+        version: "love-runtime-005",
         reentryDoor: null,
         reentryDoorAccepted: { A: false, B: false },
         reentryApplied: false,
@@ -546,6 +583,69 @@ function renderMailHistory(turns) {
   }).join("");
 }
 
+function negotiableOffers() {
+  return (state.relation.mail_offers || []).filter(offer =>
+    ["proposed", "countered"].includes(offer.status)
+  );
+}
+
+function selectedMailOffer() {
+  return (state.relation.mail_offers || []).find(offer =>
+    offer.proposal_id === state.selected_offer_id
+  ) || null;
+}
+
+function buildMailDoor(offer) {
+  const A = state.participants.A;
+  const B = state.participants.B;
+  const previous = [...state.occurrences].reverse().find(o => o.occurrence_id !== "occurrence-004") || null;
+  return {
+    door_id: "door-mail-001",
+    source_mail_proposal_id: offer.proposal_id,
+    source_mail_revision: offer.revision,
+    source_occurrence_id: previous?.occurrence_id || null,
+    title: offer.title,
+    premise: offer.premise,
+    quest: {
+      quest_id: "quest-mail-001",
+      premise: offer.premise,
+      shared_object: null,
+      changed_variable: offer.declared_perturbation || null,
+      constraints: unique([...(A?.constraints || []), ...(B?.constraints || [])]),
+      opt_outs: ["modify before crossing", "decline crossing", "end occurrence"],
+      completion_definition: "The participants either perform the composed crossing or explicitly stop.",
+      artifact_prompt: "Record only artifacts participants choose to carry into the relation."
+    },
+    declared_perturbation: offer.declared_perturbation || "mail-composed crossing",
+    constraints: unique([...(A?.constraints || []), ...(B?.constraints || [])]),
+    requires_mutual_acceptance: true,
+    why_reachable: [
+      "one participant authored the current revision",
+      "the other participant accepted that exact revision",
+      "mutual composition produced a door but not a crossing"
+    ]
+  };
+}
+
+function promoteAcceptedOffer(offer) {
+  offer.status = "promoted";
+  offer.awaiting_participant = null;
+  offer.history = [
+    ...(offer.history || []),
+    { action: "promoted_to_door", revision: offer.revision, door_id: "door-mail-001" }
+  ];
+  state.mailDoor = buildMailDoor(offer);
+  state.mailDoorAccepted = { A: false, B: false };
+  state.mailDeltaApplied = false;
+}
+
+function offerHistoryHtml(offer) {
+  return (offer.history || []).map(entry => {
+    const who = entry.by ? participantName(entry.by) : "LOVE";
+    return `<li>r${entry.revision ?? offer.revision}: ${escapeHtml(entry.action)} — ${escapeHtml(who)}</li>`;
+  }).join("");
+}
+
 function showStep(id) {
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === id));
   document.querySelectorAll(".steps button").forEach(b => b.classList.toggle("active", b.dataset.step === id));
@@ -604,8 +704,8 @@ function render() {
 
   const nameA = A?.name || "Participant A";
   const nameB = B?.name || "Participant B";
-  ["#labelA", "#acceptALabel", "#accept2ALabel", "#accept3ALabel"].forEach(s => document.querySelector(s).textContent = nameA);
-  ["#labelB", "#acceptBLabel", "#accept2BLabel", "#accept3BLabel"].forEach(s => document.querySelector(s).textContent = nameB);
+  ["#labelA", "#acceptALabel", "#accept2ALabel", "#accept3ALabel", "#acceptMailDoorALabel"].forEach(s => document.querySelector(s).textContent = nameA);
+  ["#labelB", "#acceptBLabel", "#accept2BLabel", "#accept3BLabel", "#acceptMailDoorBLabel"].forEach(s => document.querySelector(s).textContent = nameB);
 
   document.querySelector("#acceptA").checked = !!state.firstDoorAccepted.A;
   document.querySelector("#acceptB").checked = !!state.firstDoorAccepted.B;
@@ -613,10 +713,13 @@ function render() {
   document.querySelector("#accept2B").checked = !!state.nextDoorAccepted.B;
   document.querySelector("#accept3A").checked = !!state.reentryDoorAccepted.A;
   document.querySelector("#accept3B").checked = !!state.reentryDoorAccepted.B;
+  document.querySelector("#acceptMailDoorA").checked = !!state.mailDoorAccepted.A;
+  document.querySelector("#acceptMailDoorB").checked = !!state.mailDoorAccepted.B;
 
   renderDoor("#doorCard", state.firstDoor, "<h2>No door is open yet.</h2><p>Mutual opening is required.</p>");
   renderDoor("#nextDoorCard", state.nextDoor, "<h2>No second door selected.</h2><p>Select one from the relation inventory first.</p>");
   renderDoor("#reentryDoorCard", state.reentryDoor, "<h2>No return door prepared.</h2><p>Choose a prior crossing from the relation inventory.</p>");
+  renderDoor("#mailDoorCard", state.mailDoor, "<p>No proposal has reached mutual composition.</p>");
 
   const baseline = state.probes.find(p => p.operator === "baseline@1");
   const dogram = document.querySelector("#dogramReceipt");
@@ -789,8 +892,74 @@ function render() {
   document.querySelector("#mailHistory").innerHTML = renderMailHistory(state.mail?.turns || []);
   fillList("#revealedThreadList", state.relation.revealed_threads || []);
   fillList("#mailOfferList", (state.relation.mail_offers || []).map(offer =>
-    `${offer.title}: ${offer.premise}`
+    `[${offer.status}] r${offer.revision} — ${offer.title}: ${offer.premise}`
   ));
+
+  const offers = state.relation.mail_offers || [];
+  const offerChoices = document.querySelector("#offerChoices");
+  offerChoices.innerHTML = offers.length
+    ? offers.map(offer => `
+        <label class="door-choice">
+          <input type="radio" name="mailOfferChoice" value="${escapeHtml(offer.proposal_id)}"
+            ${state.selected_offer_id === offer.proposal_id ? "checked" : ""}
+            ${["declined", "promoted"].includes(offer.status) ? "disabled" : ""} />
+          <span>
+            <strong>${escapeHtml(offer.title)}</strong>
+            <span class="status-pill">${escapeHtml(offer.status)}</span><br />
+            <small>revision ${offer.revision} · awaiting ${offer.awaiting_participant ? escapeHtml(participantName(offer.awaiting_participant)) : "nobody"}</small>
+          </span>
+        </label>
+      `).join("")
+    : "<p>No opened mail proposal has entered the relation yet.</p>";
+
+  const selectedOffer = selectedMailOffer();
+  const negotiationCard = document.querySelector("#offerNegotiationCard");
+  if (selectedOffer) {
+    negotiationCard.classList.remove("muted");
+    negotiationCard.innerHTML = `
+      <p class="tag">${escapeHtml(selectedOffer.proposal_id)} · revision ${selectedOffer.revision}</p>
+      <h3>${escapeHtml(selectedOffer.title)}</h3>
+      <p>${escapeHtml(selectedOffer.premise)}</p>
+      <p><strong>Changed variable / question:</strong> ${escapeHtml(selectedOffer.declared_perturbation || "none declared")}</p>
+      <p><strong>Current author:</strong> ${escapeHtml(participantName(selectedOffer.current_author))}</p>
+      <p><strong>Awaiting:</strong> ${selectedOffer.awaiting_participant ? escapeHtml(participantName(selectedOffer.awaiting_participant)) : "resolved"}</p>
+      <ul>${offerHistoryHtml(selectedOffer)}</ul>
+    `;
+    document.querySelector("#counterTitle").value = selectedOffer.title;
+    document.querySelector("#counterPremise").value = selectedOffer.premise;
+    document.querySelector("#counterPerturbation").value = selectedOffer.declared_perturbation || "";
+  } else {
+    negotiationCard.classList.add("muted");
+    negotiationCard.innerHTML = "<p>No negotiable mail proposal selected.</p>";
+  }
+
+  const mailDelta = state.probes.find(p => p.probe_id === "probe-mail-001");
+  const mailDeltaCard = document.querySelector("#mailDeltaReceipt");
+  if (mailDelta) {
+    mailDeltaCard.classList.remove("muted");
+    const r = mailDelta.residual;
+    mailDeltaCard.innerHTML = `
+      <p class="tag">delta@1 · mail-origin</p>
+      <p class="delta-equation">${escapeHtml(mailDelta.equation)}</p>
+      ${receiptList("Changed", r.changed)}
+      ${receiptList("Persisted", r.persisted)}
+      ${receiptList("Appeared", r.appeared)}
+      ${receiptList("Became reachable", r.became_reachable)}
+      ${receiptList("Unresolved", r.unresolved)}
+      <p><strong>Disappeared:</strong> not inferred from omission.</p>
+    `;
+  } else {
+    mailDeltaCard.classList.add("muted");
+    mailDeltaCard.innerHTML = "<p>A mail-origin crossing is required.</p>";
+  }
+
+  const mailCrossingBanner = document.querySelector("#mailCrossingBanner");
+  mailCrossingBanner.innerHTML = state.mailDoor
+    ? `<p class="tag">${escapeHtml(state.mailDoor.door_id)} · from mail proposal</p>
+       <p><strong>${escapeHtml(state.mailDoor.title)}</strong></p>
+       <p>${escapeHtml(state.mailDoor.premise)}</p>
+       <p><strong>Declared perturbation:</strong> ${escapeHtml(state.mailDoor.declared_perturbation || "none")}</p>`
+    : "<p>No composed mail Door exists.</p>";
 }
 
 document.querySelectorAll(".steps button").forEach(button => {
@@ -1228,7 +1397,12 @@ document.querySelector("#sendMailTurn").addEventListener("click", () => {
         title: proposalTitle || "Untitled possible door",
         premise: proposalPremise || "No premise supplied.",
         declared_perturbation: proposalPerturbation || null,
-        status: "proposed"
+        status: "proposed",
+        proposed_by_participant: sender,
+        current_author: sender,
+        awaiting_participant: recipient,
+        revision: 0,
+        history: [{ action: "proposed", by: sender, revision: 0 }]
       }
     : null;
 
@@ -1343,12 +1517,240 @@ document.querySelector("#openMailTurn").addEventListener("click", () => {
   render();
 });
 
+document.querySelector("#openOfferNegotiation").addEventListener("click", () => {
+  const first = negotiableOffers()[0];
+  if (first && !state.selected_offer_id) state.selected_offer_id = first.proposal_id;
+  saveState();
+  render();
+  showStep("mail-offer");
+});
+
+document.querySelector("#offerChoices").addEventListener("change", event => {
+  if (event.target?.name !== "mailOfferChoice") return;
+  state.selected_offer_id = event.target.value;
+  saveState();
+  render();
+});
+
+document.querySelector("#acceptOffer").addEventListener("click", () => {
+  const offer = selectedMailOffer();
+  const status = document.querySelector("#offerStatus");
+  if (!offer || !["proposed", "countered"].includes(offer.status)) {
+    status.textContent = "Select a negotiable proposal first.";
+    return;
+  }
+
+  const actor = offer.awaiting_participant;
+  if (!actor) {
+    status.textContent = "This proposal is not awaiting a response.";
+    return;
+  }
+
+  offer.status = "accepted";
+  offer.history = [
+    ...(offer.history || []),
+    { action: "accepted_current_revision", by: actor, revision: offer.revision }
+  ];
+  status.textContent = `${participantName(actor)} accepted revision ${offer.revision}. Mutual composition is complete.`;
+  promoteAcceptedOffer(offer);
+  saveState();
+  render();
+  showStep("mail-door");
+});
+
+document.querySelector("#counterOffer").addEventListener("click", () => {
+  const offer = selectedMailOffer();
+  const status = document.querySelector("#offerStatus");
+  if (!offer || !["proposed", "countered"].includes(offer.status)) {
+    status.textContent = "Select a negotiable proposal first.";
+    return;
+  }
+
+  const actor = offer.awaiting_participant;
+  if (!actor) {
+    status.textContent = "This proposal is not awaiting a response.";
+    return;
+  }
+
+  const title = document.querySelector("#counterTitle").value.trim();
+  const premise = document.querySelector("#counterPremise").value.trim();
+  const perturbation = document.querySelector("#counterPerturbation").value.trim();
+
+  if (!title || !premise) {
+    status.textContent = "A counterproposal needs a title and premise.";
+    return;
+  }
+
+  const priorRevision = offer.revision;
+  offer.revision += 1;
+  offer.title = title;
+  offer.premise = premise;
+  offer.declared_perturbation = perturbation || null;
+  offer.status = "countered";
+  offer.current_author = actor;
+  offer.awaiting_participant = otherParticipant(actor);
+  offer.history = [
+    ...(offer.history || []),
+    {
+      action: "countered",
+      by: actor,
+      revision: offer.revision,
+      supersedes_revision: priorRevision
+    }
+  ];
+
+  state.mailDoor = null;
+  state.mailDoorAccepted = { A: false, B: false };
+  state.mailDeltaApplied = false;
+  status.textContent = `Revision ${offer.revision} sent back to ${participantName(offer.awaiting_participant)}. Prior acceptance does not carry forward.`;
+  saveState();
+  render();
+});
+
+document.querySelector("#declineOffer").addEventListener("click", () => {
+  const offer = selectedMailOffer();
+  const status = document.querySelector("#offerStatus");
+  if (!offer || !["proposed", "countered"].includes(offer.status)) {
+    status.textContent = "Select a negotiable proposal first.";
+    return;
+  }
+
+  const actor = offer.awaiting_participant;
+  offer.status = "declined";
+  offer.history = [
+    ...(offer.history || []),
+    { action: "declined", by: actor, revision: offer.revision }
+  ];
+  offer.awaiting_participant = null;
+  status.textContent = "Proposal declined. No Door was created and no score changed.";
+  saveState();
+  render();
+});
+
+document.querySelector("#crossMailDoor").addEventListener("click", () => {
+  state.mailDoorAccepted.A = document.querySelector("#acceptMailDoorA").checked;
+  state.mailDoorAccepted.B = document.querySelector("#acceptMailDoorB").checked;
+  const status = document.querySelector("#mailDoorStatus");
+
+  if (!state.mailDoor) {
+    status.textContent = "No mutually composed Door exists.";
+  } else if (!(state.mailDoorAccepted.A && state.mailDoorAccepted.B)) {
+    status.textContent = "DOOR ≠ CROSSING. Fresh crossing consent is still required.";
+  } else {
+    status.textContent = "Composed Door crossed. Receipt occurrence 004.";
+    showStep("mail-crossing");
+  }
+  saveState();
+});
+
+document.querySelector("#fillMailCrossingSample").addEventListener("click", () => {
+  document.querySelector("#plannedMinutes4").value = 60;
+  document.querySelector("#actualMinutes4").value = 83;
+  document.querySelector("#observations4").value = [
+    "both brought a postcard without coordinating the image",
+    "both wrote the sentence before showing the postcard",
+    "the chosen places were in opposite directions"
+  ].join("\n");
+  document.querySelector("#artifacts4").value = "two annotated postcards";
+  document.querySelector("#questions4").value = "What makes a place worth traveling toward?";
+  document.querySelector("#unresolved4").value = "whether either proposed place should become a future crossing";
+  document.querySelector("#resolved4").value = "";
+});
+
+document.querySelector("#saveEncounter4").addEventListener("click", () => {
+  const status = document.querySelector("#crossingStatus4");
+  if (!(state.mailDoor && state.mailDoorAccepted.A && state.mailDoorAccepted.B)) {
+    status.textContent = "No mutually accepted mail Door has been crossed.";
+    return;
+  }
+
+  const source = state.mailDoor.source_occurrence_id
+    ? state.occurrences.find(o => o.occurrence_id === state.mailDoor.source_occurrence_id)
+    : [...state.occurrences].reverse().find(o => o.occurrence_id !== "occurrence-004");
+
+  if (!source) {
+    status.textContent = "No prior occurrence exists to ground this delta@1.";
+    return;
+  }
+
+  const current = {
+    occurrence_id: "occurrence-004",
+    door_id: state.mailDoor.door_id,
+    participants: [state.participants.A.name, state.participants.B.name],
+    planned_minutes: Number(document.querySelector("#plannedMinutes4").value || 0),
+    actual_minutes: Number(document.querySelector("#actualMinutes4").value || 0),
+    observations: lines(document.querySelector("#observations4").value),
+    artifacts: lines(document.querySelector("#artifacts4").value),
+    questions_generated: lines(document.querySelector("#questions4").value),
+    unresolved: lines(document.querySelector("#unresolved4").value),
+    resolved_previous: lines(document.querySelector("#resolved4").value)
+  };
+
+  state.occurrences = [
+    ...state.occurrences.filter(o => o.occurrence_id !== "occurrence-004"),
+    current
+  ];
+
+  const probe = runDelta(source, current, state.mailDoor);
+  probe.probe_id = "probe-mail-001";
+  probe.equation = `ΔF = F(occurrence-004) − F(${source.occurrence_id}) under mail-composed door: ${state.mailDoor.declared_perturbation}`;
+  probe.residual.became_reachable = unique([
+    ...probe.residual.became_reachable,
+    "compose a future door from mail + crossing history"
+  ]);
+
+  state.probes = [
+    ...state.probes.filter(p => p.probe_id !== "probe-mail-001"),
+    probe
+  ];
+  state.mailDeltaApplied = false;
+  status.textContent = `Occurrence 004 receipted. The mailed proposal has become a historical crossing.`;
+  saveState();
+  render();
+  showStep("mail-delta");
+});
+
+document.querySelector("#carryMailDelta").addEventListener("click", () => {
+  const status = document.querySelector("#mailDeltaStatus");
+  if (state.mailDeltaApplied) {
+    status.textContent = "This mail delta is already carried.";
+    showStep("relation");
+    return;
+  }
+
+  const current = state.occurrences.find(o => o.occurrence_id === "occurrence-004");
+  const probe = state.probes.find(p => p.probe_id === "probe-mail-001");
+  if (!current || !probe) {
+    status.textContent = "No mail-origin delta is available.";
+    return;
+  }
+
+  state.relation.occurrence_count = Math.max(state.relation.occurrence_count, 4);
+  state.relation.relics = unique([...state.relation.relics, ...current.artifacts]);
+  state.relation.mutually_reachable = unique([
+    ...state.relation.mutually_reachable,
+    ...probe.residual.became_reachable
+  ]);
+
+  const resolvedNorm = new Set((probe.residual.explicitly_resolved || []).map(normalize));
+  state.relation.unresolved = unique([
+    ...state.relation.unresolved.filter(v => !resolvedNorm.has(normalize(v))),
+    ...current.unresolved
+  ]);
+
+  state.mailDeltaApplied = true;
+  status.textContent = "Mail delta carried. Correspondence has now produced a Door, a crossing, and a Dogram receipt.";
+  saveState();
+  render();
+  showStep("relation");
+});
+
 document.querySelector("#exportState").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "love-relation-004.json";
+  a.download = "love-relation-005.json";
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -1357,6 +1759,7 @@ document.querySelector("#resetState").addEventListener("click", () => {
   if (!confirm("Reset the local LOVE runtime state?")) return;
   state = emptyState();
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(LEGACY_KEY_004);
   localStorage.removeItem(LEGACY_KEY_003);
   localStorage.removeItem(LEGACY_KEY_002);
   localStorage.removeItem(LEGACY_KEY_001);
