@@ -67,6 +67,19 @@
         "string",
         "null"
       ]
+    },
+    "source_mail_proposal_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_mail_revision": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
     }
   }
 }
