@@ -272,3 +272,13 @@ blockquote {
   .panel-heading { flex-direction: column; }
   .history-item { grid-template-columns: 1fr; gap: 4px; }
 }
+
+
+.return-card {
+  margin-top: 18px;
+  border-style: dashed;
+}
+
+.return-card .nearby {
+  margin-top: 14px;
+}
