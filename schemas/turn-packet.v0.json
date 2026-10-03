@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/turn-packet.v0.json",
+  "title": "LOVE Turn Packet v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "turn_id",
+    "sender_participant",
+    "recipient_participant",
+    "status",
+    "letter",
+    "created_after_occurrence_count"
+  ],
+  "properties": {
+    "turn_id": { "type": "string", "minLength": 1 },
+    "sender_participant": { "type": "string", "minLength": 1 },
+    "recipient_participant": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["delivered", "held", "opened", "declined"]
+    },
+    "created_after_occurrence_count": { "type": "integer", "minimum": 0 },
+    "letter": { "$ref": "letter.v0.json" },
+    "explicit_reveal": { "type": "string", "default": "" },
+    "enclosed_artifact": { "type": "string", "default": "" },
+    "door_proposal": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["proposal_id", "title", "premise", "status"],
+          "properties": {
+            "proposal_id": { "type": "string", "minLength": 1 },
+            "title": { "type": "string", "minLength": 1 },
+            "premise": { "type": "string", "minLength": 1 },
+            "declared_perturbation": { "type": ["string", "null"] },
+            "status": { "const": "proposed" }
+          }
+        }
+      ]
+    },
+    "resolved_without_opening": { "type": "boolean", "default": false },
+    "opened_effects": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["revealed_threads_added", "relics_added", "mail_offers_added"],
+          "properties": {
+            "revealed_threads_added": { "type": "array", "items": { "type": "string" } },
+            "relics_added": { "type": "array", "items": { "type": "string" } },
+            "mail_offers_added": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      ]
+    }
+  }
+}
