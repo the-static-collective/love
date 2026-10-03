@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/mail-offer.v0.json",
+  "title": "LOVE Mail Offer v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "proposal_id",
+    "title",
+    "premise",
+    "status",
+    "proposed_by_participant",
+    "current_author",
+    "revision",
+    "history"
+  ],
+  "properties": {
+    "proposal_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "premise": { "type": "string", "minLength": 1 },
+    "declared_perturbation": { "type": ["string", "null"] },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "countered", "accepted", "declined", "promoted"]
+    },
+    "proposed_by_participant": { "type": "string", "minLength": 1 },
+    "current_author": { "type": "string", "minLength": 1 },
+    "awaiting_participant": { "type": ["string", "null"] },
+    "revision": { "type": "integer", "minimum": 0 },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["action", "revision"],
+        "properties": {
+          "action": { "type": "string", "minLength": 1 },
+          "by": { "type": ["string", "null"] },
+          "revision": { "type": "integer", "minimum": 0 },
+          "supersedes_revision": { "type": "integer", "minimum": 0 },
+          "door_id": { "type": "string" }
+        }
+      }
+    }
+  }
+}
