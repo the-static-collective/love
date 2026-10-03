@@ -109,7 +109,14 @@ function normalizeLoadedState(raw) {
       door_proposal: turn.door_proposal || null,
       addressed_place_id: turn.addressed_place_id || null,
       place_context_snapshot: turn.place_context_snapshot || null,
-      opened_effects: turn.opened_effects || null
+      opened_effects: turn.opened_effects
+        ? {
+            revealed_threads_added: turn.opened_effects.revealed_threads_added || [],
+            relics_added: turn.opened_effects.relics_added || [],
+            mail_offers_added: turn.opened_effects.mail_offers_added || [],
+            places_linked: turn.opened_effects.places_linked || []
+          }
+        : null
     }))
   };
   base.relation = { ...emptyState().relation, ...(base.relation || {}) };
@@ -1243,6 +1250,7 @@ function render() {
             <p><strong>Occurrences:</strong> ${place.source_occurrence_ids.map(escapeHtml).join(", ") || "none"}</p>
             <p><strong>Relics:</strong> ${place.relics.map(escapeHtml).join(", ") || "none"}</p>
             <p><strong>Unresolved:</strong> ${place.unresolved.map(escapeHtml).join(" · ") || "none"}</p>
+            <p><strong>Mail turns:</strong> ${(place.mail_turn_ids || []).map(escapeHtml).join(", ") || "none"}</p>
             <div class="place-links">
               ${place.reachable_from_here.map(v => `<span>${escapeHtml(v)}</span>`).join("")}
             </div>
