@@ -202,7 +202,7 @@ function runBaseline(encounter, A, B) {
   const combinedThreads = unique([...A.threads, ...B.threads]);
   const recurring = combinedThreads.filter(thread =>
     encounter.observations.some(o => o.toLowerCase().includes(thread.toLowerCase())) ||
-    encounter.questions.some(q => q.toLowerCase().includes(thread.toLowerCase()))
+    encounter.questions_generated.some(q => q.toLowerCase().includes(thread.toLowerCase()))
   );
 
   return {
@@ -241,8 +241,8 @@ function runDelta(previous, current, door) {
   repeatedArtifacts.forEach(v => persisted.push(`artifact repeated in both occurrences: ${v}`));
   newArtifacts.forEach(v => appeared.push(`new occurrence artifact: ${v}`));
 
-  const repeatedQuestions = intersection(previous.questions, current.questions);
-  const newQuestions = difference(current.questions, previous.questions);
+  const repeatedQuestions = intersection(previous.questions_generated, current.questions_generated);
+  const newQuestions = difference(current.questions_generated, previous.questions_generated);
   repeatedQuestions.forEach(v => persisted.push(`question repeated: ${v}`));
   newQuestions.forEach(v => appeared.push(`new question: ${v}`));
 
@@ -514,7 +514,7 @@ document.querySelector("#saveEncounter").addEventListener("click", () => {
     actual_minutes: Number(document.querySelector("#actualMinutes").value || 0),
     observations: lines(document.querySelector("#observations").value),
     artifacts: lines(document.querySelector("#artifacts").value),
-    questions: lines(document.querySelector("#questions").value),
+    questions_generated: lines(document.querySelector("#questions").value),
     unresolved: lines(document.querySelector("#unresolved").value),
     resolved_previous: []
   };
@@ -618,7 +618,7 @@ document.querySelector("#saveEncounter2").addEventListener("click", () => {
     actual_minutes: Number(document.querySelector("#actualMinutes2").value || 0),
     observations: lines(document.querySelector("#observations2").value),
     artifacts: lines(document.querySelector("#artifacts2").value),
-    questions: lines(document.querySelector("#questions2").value),
+    questions_generated: lines(document.querySelector("#questions2").value),
     unresolved: lines(document.querySelector("#unresolved2").value),
     resolved_previous: lines(document.querySelector("#resolved2").value)
   };
