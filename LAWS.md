@@ -26,6 +26,18 @@ A relation can accumulate shared artifacts, recurring places, unresolved questio
 
 The state is a receipt of what is presently known, not a verdict on what the relationship “is.”
 
+**THE CROSSING BECOMES A PLACE**
+
+Repeated or composed relation history may be gathered into a named place that can hold occurrences, relics, unresolved questions, and reachable future doors.
+
+**PLACE FORMATION REQUIRES AUTHORSHIP**
+
+LOVE may derive candidate sources and provenance. It may not silently declare that a cluster of history is a place. A place enters the save file only through explicit human formation.
+
+**PLACE != GEOGRAPHY**
+
+A relation place may correspond to a physical location, but it may also be a recurring ritual, correspondence cluster, shared table, question-space, or other jointly meaningful structure.
+
 ## Mail
 
 **DELIVERY != OPENING**
