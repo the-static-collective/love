@@ -41,12 +41,31 @@ const emptyState = () => ({
   }
 });
 
+function normalizeLoadedState(raw) {
+  const base = { ...emptyState(), ...raw };
+  const participantNames = [
+    base.participants?.A?.name || "Participant A",
+    base.participants?.B?.name || "Participant B"
+  ];
+
+  base.occurrences = (base.occurrences || []).map(o => ({
+    ...o,
+    participants: o.participants || participantNames,
+    questions_generated: o.questions_generated || o.questions || [],
+    resolved_previous: o.resolved_previous || []
+  }));
+
+  base.probes = base.probes || [];
+  base.relation = { ...emptyState().relation, ...(base.relation || {}) };
+  return base;
+}
+
 let state = loadState();
 
 function loadState() {
   try {
     const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (current) return { ...emptyState(), ...current };
+    if (current) return normalizeLoadedState(current);
 
     const v2 = JSON.parse(localStorage.getItem(LEGACY_KEY_002));
     if (v2) {
@@ -58,8 +77,9 @@ function loadState() {
         reentryDoorAccepted: { A: false, B: false },
         reentryApplied: false
       };
-      saveRaw(migrated);
-      return migrated;
+      const normalized = normalizeLoadedState(migrated);
+      saveRaw(normalized);
+      return normalized;
     }
 
     const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY_001));
@@ -77,8 +97,9 @@ function loadState() {
       ...migrated.relation,
       ...(legacy.relation || {})
     };
-    saveRaw(migrated);
-    return migrated;
+    const normalized = normalizeLoadedState(migrated);
+    saveRaw(normalized);
+    return normalized;
   } catch {
     return emptyState();
   }
@@ -666,6 +687,7 @@ document.querySelector("#saveEncounter").addEventListener("click", () => {
   const encounter = {
     occurrence_id: "occurrence-001",
     door_id: state.firstDoor.door_id,
+    participants: [state.participants.A.name, state.participants.B.name],
     planned_minutes: Number(document.querySelector("#plannedMinutes").value || 0),
     actual_minutes: Number(document.querySelector("#actualMinutes").value || 0),
     observations: lines(document.querySelector("#observations").value),
@@ -770,6 +792,7 @@ document.querySelector("#saveEncounter2").addEventListener("click", () => {
   const current = {
     occurrence_id: "occurrence-002",
     door_id: state.nextDoor.door_id,
+    participants: [state.participants.A.name, state.participants.B.name],
     planned_minutes: Number(document.querySelector("#plannedMinutes2").value || 0),
     actual_minutes: Number(document.querySelector("#actualMinutes2").value || 0),
     observations: lines(document.querySelector("#observations2").value),
