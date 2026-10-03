@@ -24,8 +24,19 @@
       "properties": {
         "relics": { "type": "array", "items": { "type": "string" } },
         "recurring_threads": { "type": "array", "items": { "type": "string" } },
+        "revealed_threads": { "type": "array", "items": { "type": "string" }, "default": [] },
         "unresolved": { "type": "array", "items": { "type": "string" } },
-        "mutually_reachable": { "type": "array", "items": { "type": "string" } }
+        "mutually_reachable": { "type": "array", "items": { "type": "string" } },
+        "mail_offers": {
+          "type": "array",
+          "default": [],
+          "items": { "$ref": "#/$defs/mail_offer" }
+        },
+        "opened_mail_turns": {
+          "type": "array",
+          "default": [],
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     }
   },
@@ -37,6 +48,18 @@
       "properties": {
         "occurrence_id": { "type": "string", "minLength": 1 },
         "door_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "mail_offer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposal_id", "title", "premise", "status"],
+      "properties": {
+        "proposal_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "premise": { "type": "string", "minLength": 1 },
+        "declared_perturbation": { "type": ["string", "null"] },
+        "status": { "const": "proposed" }
       }
     }
   }
