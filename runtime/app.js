@@ -1,4 +1,5 @@
-const STORAGE_KEY = "love-runtime-003";
+const STORAGE_KEY = "love-runtime-004";
+const LEGACY_KEY_003 = "love-runtime-003";
 const LEGACY_KEY_002 = "love-runtime-002";
 const LEGACY_KEY_001 = "love-runtime-001";
 
@@ -18,7 +19,7 @@ const sample = {
 };
 
 const emptyState = () => ({
-  version: "love-runtime-003",
+  version: "love-runtime-004",
   participants: { A: null, B: null },
   letters: { prompt: "", A: "", B: "", openA: false, openB: false },
   firstDoor: null,
@@ -32,12 +33,19 @@ const emptyState = () => ({
   reentryDoor: null,
   reentryDoorAccepted: { A: false, B: false },
   reentryApplied: false,
+  mail: {
+    next_sender: "A",
+    turns: []
+  },
   relation: {
     occurrence_count: 0,
     relics: [],
     recurring_threads: [],
+    revealed_threads: [],
     unresolved: [],
-    mutually_reachable: []
+    mutually_reachable: [],
+    mail_offers: [],
+    opened_mail_turns: []
   }
 });
 
@@ -81,7 +89,22 @@ function normalizeLoadedState(raw) {
   }));
 
   base.probes = base.probes || [];
+  base.mail = {
+    ...emptyState().mail,
+    ...(base.mail || {}),
+    turns: (base.mail?.turns || []).map(turn => ({
+      ...turn,
+      status: turn.status || "delivered",
+      explicit_reveal: turn.explicit_reveal || "",
+      enclosed_artifact: turn.enclosed_artifact || "",
+      door_proposal: turn.door_proposal || null,
+      opened_effects: turn.opened_effects || null
+    }))
+  };
   base.relation = { ...emptyState().relation, ...(base.relation || {}) };
+  base.relation.revealed_threads = base.relation.revealed_threads || [];
+  base.relation.mail_offers = base.relation.mail_offers || [];
+  base.relation.opened_mail_turns = base.relation.opened_mail_turns || [];
   return base;
 }
 
@@ -92,19 +115,31 @@ function loadState() {
     const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (current) return normalizeLoadedState(current);
 
+    const v3 = JSON.parse(localStorage.getItem(LEGACY_KEY_003));
+    if (v3) {
+      const migrated = normalizeLoadedState({
+        ...emptyState(),
+        ...v3,
+        version: "love-runtime-004",
+        mail: { next_sender: "A", turns: [] }
+      });
+      saveRaw(migrated);
+      return migrated;
+    }
+
     const v2 = JSON.parse(localStorage.getItem(LEGACY_KEY_002));
     if (v2) {
-      const migrated = {
+      const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v2,
-        version: "love-runtime-003",
+        version: "love-runtime-004",
         reentryDoor: null,
         reentryDoorAccepted: { A: false, B: false },
-        reentryApplied: false
-      };
-      const normalized = normalizeLoadedState(migrated);
-      saveRaw(normalized);
-      return normalized;
+        reentryApplied: false,
+        mail: { next_sender: "A", turns: [] }
+      });
+      saveRaw(migrated);
+      return migrated;
     }
 
     const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY_001));
@@ -451,6 +486,66 @@ function runDelta(previous, current, door) {
   };
 }
 
+function participantName(key) {
+  return state.participants?.[key]?.name || (key === "A" ? "Participant A" : "Participant B");
+}
+
+function otherParticipant(key) {
+  return key === "A" ? "B" : "A";
+}
+
+function pendingMailTurn() {
+  return [...(state.mail?.turns || [])].reverse().find(turn =>
+    ["delivered", "held"].includes(turn.status)
+  ) || null;
+}
+
+function mailTurnNumber() {
+  return (state.mail?.turns?.length || 0) + 1;
+}
+
+function clearMailComposer() {
+  ["#mailBody", "#mailReveal", "#mailArtifact", "#mailDoorTitle", "#mailDoorPremise", "#mailDoorPerturbation"]
+    .forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.value = "";
+    });
+}
+
+function renderMailHistory(turns) {
+  if (!turns.length) return "<p>No mail turns yet.</p>";
+  return [...turns].reverse().map(turn => {
+    const opened = turn.status === "opened";
+    const declined = turn.status === "declined";
+    const body = opened
+      ? `<blockquote>${escapeHtml(turn.letter.body)}</blockquote>`
+      : declined
+        ? "<p><em>Declined unopened. Letter body remains sealed in the interface.</em></p>"
+        : "<p><em>Sealed.</em></p>";
+
+    const payload = opened
+      ? `
+        ${turn.explicit_reveal ? `<p><strong>Reveal:</strong> ${escapeHtml(turn.explicit_reveal)}</p>` : ""}
+        ${turn.enclosed_artifact ? `<p><strong>Artifact:</strong> ${escapeHtml(turn.enclosed_artifact)}</p>` : ""}
+        ${turn.door_proposal ? `<p><strong>Door proposal:</strong> ${escapeHtml(turn.door_proposal.title)}</p>` : ""}
+      `
+      : "";
+
+    return `
+      <div class="mail-turn">
+        <p>
+          <span class="status-pill">${escapeHtml(turn.status)}</span>
+          <strong>${escapeHtml(turn.turn_id)}</strong>
+          · ${escapeHtml(participantName(turn.sender_participant))}
+          → ${escapeHtml(participantName(turn.recipient_participant))}
+        </p>
+        ${body}
+        ${payload}
+      </div>
+    `;
+  }).join("");
+}
+
 function showStep(id) {
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === id));
   document.querySelectorAll(".steps button").forEach(b => b.classList.toggle("active", b.dataset.step === id));
@@ -652,6 +747,50 @@ function render() {
        <p>${escapeHtml(state.reentryDoor.declared_perturbation)}</p>
        <p>${escapeHtml(state.reentryDoor.question)}</p>`
     : '<p class="tag">Re-entry comparison</p><p>No return door prepared.</p>';
+
+  const senderKey = state.mail?.next_sender || "A";
+  const recipientKey = otherParticipant(senderKey);
+  const pending = pendingMailTurn();
+
+  document.querySelector("#mailSenderLabel").textContent = participantName(senderKey);
+  document.querySelector("#mailRecipientLabel").textContent = participantName(recipientKey);
+
+  const mailHeader = document.querySelector("#mailTurnHeader");
+  mailHeader.innerHTML = pending
+    ? `<p class="tag">${escapeHtml(pending.turn_id)} · ${escapeHtml(pending.status)}</p>
+       <h3>${escapeHtml(participantName(pending.recipient_participant))}, you have mail.</h3>
+       <p>The packet is still sealed. Opening, holding, and declining are distinct actions.</p>`
+    : `<p class="tag">Next turn</p>
+       <h3>${escapeHtml(participantName(senderKey))} → ${escapeHtml(participantName(recipientKey))}</h3>
+       <p>Compose a letter turn. Sending does not change the relation.</p>`;
+
+  document.querySelector("#mailComposer").style.display = pending ? "none" : "block";
+  const incoming = document.querySelector("#incomingMail");
+  if (pending) {
+    incoming.classList.remove("muted");
+    incoming.style.display = "block";
+    const enclosureCount = [
+      pending.explicit_reveal,
+      pending.enclosed_artifact,
+      pending.door_proposal
+    ].filter(Boolean).length;
+    document.querySelector("#incomingMailCard").innerHTML = `
+      <p><strong>From:</strong> ${escapeHtml(participantName(pending.sender_participant))}</p>
+      <p><strong>To:</strong> ${escapeHtml(participantName(pending.recipient_participant))}</p>
+      <p><strong>Envelope:</strong> sealed letter${enclosureCount ? ` + ${enclosureCount} enclosure${enclosureCount === 1 ? "" : "s"}` : ""}</p>
+      <p><strong>Status:</strong> ${escapeHtml(pending.status)}</p>
+    `;
+  } else {
+    incoming.classList.add("muted");
+    incoming.style.display = "none";
+    document.querySelector("#incomingMailCard").innerHTML = "<p>No sealed turn is waiting.</p>";
+  }
+
+  document.querySelector("#mailHistory").innerHTML = renderMailHistory(state.mail?.turns || []);
+  fillList("#revealedThreadList", state.relation.revealed_threads || []);
+  fillList("#mailOfferList", (state.relation.mail_offers || []).map(offer =>
+    `${offer.title}: ${offer.premise}`
+  ));
 }
 
 document.querySelectorAll(".steps button").forEach(button => {
@@ -1046,12 +1185,170 @@ document.querySelector("#carryReentry").addEventListener("click", () => {
   showStep("relation");
 });
 
+document.querySelector("#fillMailSample").addEventListener("click", () => {
+  const sender = state.mail?.next_sender || "A";
+  const senderName = participantName(sender);
+  document.querySelector("#mailBody").value =
+    `I found myself thinking about the things that survive a return. This is not a request for an answer. I wanted to send you one small piece of the day and see what it becomes when it reaches you. — ${senderName}`;
+  document.querySelector("#mailReveal").value = "I like when an ordinary object acquires a shared history.";
+  document.querySelector("#mailArtifact").value = "a postcard with no writing on the picture side";
+  document.querySelector("#mailDoorTitle").value = "The Postcard Door";
+  document.querySelector("#mailDoorPremise").value = "Each person chooses a place on a postcard and writes one sentence about why it might be worth visiting.";
+  document.querySelector("#mailDoorPerturbation").value = "choose a possible place before deciding whether to go there";
+});
+
+document.querySelector("#sendMailTurn").addEventListener("click", () => {
+  const status = document.querySelector("#mailSendStatus");
+  if (!state.participants.A || !state.participants.B) {
+    status.textContent = "Presence must exist before mail can route between participants.";
+    return;
+  }
+  if (pendingMailTurn()) {
+    status.textContent = "A sealed turn is already waiting. It must be opened, held, or declined first.";
+    return;
+  }
+
+  const body = document.querySelector("#mailBody").value.trim();
+  if (!body) {
+    status.textContent = "A turn packet needs a letter body.";
+    return;
+  }
+
+  const sender = state.mail.next_sender || "A";
+  const recipient = otherParticipant(sender);
+  const turnId = `mail-${String(mailTurnNumber()).padStart(3, "0")}`;
+  const artifact = document.querySelector("#mailArtifact").value.trim();
+  const proposalTitle = document.querySelector("#mailDoorTitle").value.trim();
+  const proposalPremise = document.querySelector("#mailDoorPremise").value.trim();
+  const proposalPerturbation = document.querySelector("#mailDoorPerturbation").value.trim();
+
+  const proposal = (proposalTitle || proposalPremise || proposalPerturbation)
+    ? {
+        proposal_id: `${turnId}-proposal`,
+        title: proposalTitle || "Untitled possible door",
+        premise: proposalPremise || "No premise supplied.",
+        declared_perturbation: proposalPerturbation || null,
+        status: "proposed"
+      }
+    : null;
+
+  const turn = {
+    turn_id: turnId,
+    sender_participant: sender,
+    recipient_participant: recipient,
+    status: "delivered",
+    created_after_occurrence_count: state.relation.occurrence_count,
+    letter: {
+      letter_id: `${turnId}-letter`,
+      from_participant: participantName(sender),
+      to_participant: participantName(recipient),
+      prompt_id: null,
+      body,
+      artifact_refs: artifact ? [artifact] : [],
+      consent_to_deliver: true
+    },
+    explicit_reveal: document.querySelector("#mailReveal").value.trim(),
+    enclosed_artifact: artifact,
+    door_proposal: proposal,
+    opened_effects: null
+  };
+
+  state.mail.turns.push(turn);
+  status.textContent = `${turnId} sealed and delivered. The shared world has not changed.`;
+  clearMailComposer();
+  saveState();
+  render();
+});
+
+document.querySelector("#holdMailTurn").addEventListener("click", () => {
+  const pending = pendingMailTurn();
+  const status = document.querySelector("#mailDecisionStatus");
+  if (!pending) {
+    status.textContent = "No sealed turn is waiting.";
+    return;
+  }
+  pending.status = "held";
+  status.textContent = "Held. No payload was opened and the turn does not advance.";
+  saveState();
+  render();
+});
+
+document.querySelector("#declineMailTurn").addEventListener("click", () => {
+  const pending = pendingMailTurn();
+  const status = document.querySelector("#mailDecisionStatus");
+  if (!pending) {
+    status.textContent = "No sealed turn is waiting.";
+    return;
+  }
+
+  pending.status = "declined";
+  pending.resolved_without_opening = true;
+  state.mail.next_sender = pending.recipient_participant;
+  status.textContent = "Declined unopened. No reveal, artifact, or proposal entered the relation.";
+  saveState();
+  render();
+});
+
+document.querySelector("#openMailTurn").addEventListener("click", () => {
+  const pending = pendingMailTurn();
+  const status = document.querySelector("#mailDecisionStatus");
+  if (!pending) {
+    status.textContent = "No sealed turn is waiting.";
+    return;
+  }
+
+  const effects = {
+    revealed_threads_added: [],
+    relics_added: [],
+    mail_offers_added: []
+  };
+
+  if (pending.explicit_reveal) {
+    state.relation.revealed_threads = unique([
+      ...(state.relation.revealed_threads || []),
+      pending.explicit_reveal
+    ]);
+    effects.revealed_threads_added.push(pending.explicit_reveal);
+  }
+
+  if (pending.enclosed_artifact) {
+    state.relation.relics = unique([
+      ...state.relation.relics,
+      pending.enclosed_artifact
+    ]);
+    effects.relics_added.push(pending.enclosed_artifact);
+  }
+
+  if (pending.door_proposal) {
+    const existing = new Set((state.relation.mail_offers || []).map(o => o.proposal_id));
+    if (!existing.has(pending.door_proposal.proposal_id)) {
+      state.relation.mail_offers = [
+        ...(state.relation.mail_offers || []),
+        pending.door_proposal
+      ];
+      effects.mail_offers_added.push(pending.door_proposal.proposal_id);
+    }
+  }
+
+  state.relation.opened_mail_turns = unique([
+    ...(state.relation.opened_mail_turns || []),
+    pending.turn_id
+  ]);
+  pending.status = "opened";
+  pending.opened_effects = effects;
+  state.mail.next_sender = pending.recipient_participant;
+
+  status.textContent = "Opened. Only the explicitly enclosed payload entered the shared world. The recipient now holds the next turn.";
+  saveState();
+  render();
+});
+
 document.querySelector("#exportState").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "love-relation-003.json";
+  a.download = "love-relation-004.json";
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -1060,6 +1357,7 @@ document.querySelector("#resetState").addEventListener("click", () => {
   if (!confirm("Reset the local LOVE runtime state?")) return;
   state = emptyState();
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(LEGACY_KEY_003);
   localStorage.removeItem(LEGACY_KEY_002);
   localStorage.removeItem(LEGACY_KEY_001);
   render();
