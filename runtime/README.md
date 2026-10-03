@@ -1,4 +1,4 @@
-# LOVE Runtime 002
+# LOVE Runtime 003
 
 A zero-dependency browser specimen for the LOVE protocol.
 
@@ -10,93 +10,107 @@ No build step.
 No server required.
 No network required after the files are present.
 
-## What Runtime 002 proves
+## What Runtime 003 proves
 
-The runtime now implements a complete comparative loop:
+The runtime now implements a historical return loop:
 
 ```text
 presence
--> letter prompt
--> two letters
--> mutual open
+-> letters
 -> Door 001
 -> occurrence 001
 -> baseline@1
 -> relation inventory
--> choose one non-ranked nearby door
--> mutual acceptance of Door 002
+-> Door 002
 -> occurrence 002
 -> delta@1
--> updated relation inventory
+-> updated relation
+-> choose a prior crossed door
+-> reopen it as Door 003
+-> mutual acceptance
+-> occurrence 003
+-> reenter@1
+-> updated relation
 ```
 
-Runtime 002 migrates state from `love-runtime-001` when possible and stores current state under:
+Runtime 003 stores state under:
 
 ```text
-love-runtime-002
+love-runtime-003
 ```
 
-The relation can be exported as JSON.
+It migrates older Runtime 002 and Runtime 001 saves when possible, normalizing historical encounter receipts into the current schema instead of discarding them.
 
-## delta@1 behavior
+## The return mechanic
 
-The runtime compares only receipt-level evidence it actually has:
+A return does not replay an event.
 
-- actual duration
-- exact repeated / new artifacts
-- exact repeated / new questions
-- exact repeated / new observations
-- explicit prior resolutions
-- currently unresolved items
-
-It deliberately does **not** infer that a missing observation disappeared.
+It reconstructs a previously crossed **door** and opens a new historical occurrence.
 
 ```text
-OMISSION != NONEXISTENCE
+same door != same crossing
+same setup != same event
 ```
 
-A prior unresolved item is only removed from the relation inventory when it is explicitly listed in `resolved_previous`.
+The runtime stores:
+
+- the door being re-entered
+- the source occurrence being compared
+- the new occurrence
+- the `reenter@1` receipt
+
+## reenter@1 behavior
+
+The operator asks:
+
+> What survived the return?
+
+It may receipt:
+
+- exact observations recorded again
+- questions recorded again
+- relics that actually returned
+- new artifacts
+- new questions
+- changed duration
+- explicit resolutions
+- newly unresolved questions
+
+It does **not** infer disappearance from omission.
+
+## The save file
+
+The relation is effectively the save file.
+
+People remain people.
+The save file contains the historical third thing:
+
+- occurrences
+- relics
+- unresolved questions
+- reachable doors
+- Dogram probes
+- return history
+
+This is the sense in which LOVE is **Sims by mail**: correspondence advances a shared world, while the persistent state belongs to the relation rather than becoming a score attached to either participant.
 
 ## Important limitation
 
-Runtime 002 is a protocol specimen, not a production dating service.
+Runtime 003 is a protocol specimen, not a production dating service.
 
-It intentionally does not implement:
-- authentication
-- identity verification
-- moderation
-- location discovery
-- messaging transport
-- encrypted storage
-- physical-mail fulfillment
-- real matching
-- multi-device sync
-
-## Architectural laws preserved
-
-- no compatibility score
-- no human ranking
-- no infinite swipe feed
-- no inferred consent
-- private seeds are not automatically revealed
-- Door != Crossing
-- baseline observations do not become identity claims
-- first crossing does not fabricate a comparative delta
-- second crossing declares its perturbation before the receipt
-- omission does not become disappearance
-- resolution requires an explicit receipt
+It intentionally does not implement authentication, identity verification, moderation, location discovery, messaging transport, encrypted remote storage, physical-mail fulfillment, real matching, or multi-device sync.
 
 ## Next useful runtime increment
 
-Runtime 003 should make **reentry** executable:
+Runtime 004 should make correspondence itself turn-based:
 
 ```text
-occurrence 001
--> occurrence 002
--> choose a prior door
--> reenter@1
--> occurrence 003
--> compare return against historical occurrences
+letter
+-> delivered turn
+-> response window
+-> artifact / quest
+-> world-state mutation
+-> next letter
 ```
 
-That would make the “50 First Dates” law operational rather than documentary.
+That is where “Sims by mail” becomes the primary interface rather than a metaphor.
