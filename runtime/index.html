@@ -3,20 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LOVE Runtime 001</title>
+  <title>LOVE Runtime 002</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <p class="eyebrow">LOVE Runtime 001</p>
+      <p class="eyebrow">LOVE Runtime 002</p>
       <h1>You have received a letter.</h1>
       <p class="lede">
-        A tiny local-first courtship experiment: correspondence, doors, quests, and Dogram relation receipts.
+        Correspondence, consented doors, quests, and Dogram comparison without compatibility scores.
       </p>
       <div class="law-strip">
         <span>PERSON ≠ PROFILE</span>
         <span>DOOR ≠ CROSSING</span>
+        <span>OMISSION ≠ NONEXISTENCE</span>
         <span>DOGRAM MEASURES TRANSFORMS, NOT PEOPLE</span>
       </div>
     </header>
@@ -24,10 +25,13 @@
     <nav class="steps" aria-label="LOVE loop">
       <button data-step="presence" class="active">1. Presence</button>
       <button data-step="letters">2. Letters</button>
-      <button data-step="door">3. Door</button>
-      <button data-step="crossing">4. Crossing</button>
-      <button data-step="dogram">5. Dogram</button>
+      <button data-step="door">3. Door 001</button>
+      <button data-step="crossing">4. Crossing 001</button>
+      <button data-step="dogram">5. Baseline</button>
       <button data-step="relation">6. Relation</button>
+      <button data-step="next-door">7. Door 002</button>
+      <button data-step="second-crossing">8. Crossing 002</button>
+      <button data-step="delta">9. Δ</button>
     </nav>
 
     <section id="presence" class="panel active">
@@ -68,12 +72,8 @@
     </section>
 
     <section id="letters" class="panel">
-      <div class="panel-heading">
-        <div>
-          <p class="eyebrow">First Letter</p>
-          <h2>Write to the person, not the profile.</h2>
-        </div>
-      </div>
+      <p class="eyebrow">First Letter</p>
+      <h2>Write to the person, not the profile.</h2>
       <div class="prompt card">
         <p class="tag">Shared prompt</p>
         <blockquote id="letterPrompt">Complete Presence first.</blockquote>
@@ -111,8 +111,13 @@
     </section>
 
     <section id="crossing" class="panel">
-      <p class="eyebrow">Encounter Receipt</p>
-      <h2>Record what happened. Do not diagnose the people.</h2>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Occurrence 001</p>
+          <h2>Record what happened. Do not diagnose the people.</h2>
+        </div>
+        <button id="fillFirstSample" class="ghost">Fill specimen receipt</button>
+      </div>
 
       <div class="card form-grid">
         <label>Planned minutes<input id="plannedMinutes" type="number" min="0" value="45" /></label>
@@ -128,12 +133,10 @@
     </section>
 
     <section id="dogram" class="panel">
-      <p class="eyebrow">Dogram</p>
-      <h2>What changed in the relation?</h2>
-      <div id="dogramReceipt" class="card receipt muted">
-        <p>No crossing receipt yet.</p>
-      </div>
-      <button id="carryResidual" class="primary">Carry residual → update relation inventory</button>
+      <p class="eyebrow">baseline@1</p>
+      <h2>First occurrence: establish evidence, fabricate nothing.</h2>
+      <div id="dogramReceipt" class="card receipt muted"><p>No crossing receipt yet.</p></div>
+      <button id="carryResidual" class="primary">Carry baseline → update relation inventory</button>
     </section>
 
     <section id="relation" class="panel">
@@ -147,15 +150,72 @@
         <div class="card"><p class="tag">Reachable doors</p><ul id="doorList"></ul></div>
       </div>
 
+      <div class="card history-card">
+        <p class="tag">Occurrence history</p>
+        <div id="history"></div>
+      </div>
+
       <div class="card">
-        <p class="tag">Nearby doors</p>
+        <p class="tag">Nearby doors — choose, do not rank</p>
         <div id="nearbyDoors" class="nearby"></div>
+        <button id="prepareNextDoor" class="primary">Prepare selected Door 002</button>
+        <p id="nextDoorPrepStatus" class="status"></p>
       </div>
 
       <div class="footer-actions">
         <button id="exportState" class="ghost">Export relation JSON</button>
         <button id="resetState" class="danger">Reset local runtime</button>
       </div>
+    </section>
+
+    <section id="next-door" class="panel">
+      <p class="eyebrow">Door 002</p>
+      <div id="nextDoorCard" class="door-card card muted">
+        <h2>No second door selected.</h2>
+        <p>Select one from the relation inventory first.</p>
+      </div>
+      <div class="accept-row">
+        <label class="check"><input type="checkbox" id="accept2A" /> <span id="accept2ALabel">A</span> accepts this door.</label>
+        <label class="check"><input type="checkbox" id="accept2B" /> <span id="accept2BLabel">B</span> accepts this door.</label>
+      </div>
+      <button id="crossNextDoor" class="primary">Cross Door 002</button>
+      <p id="nextDoorStatus" class="status"></p>
+    </section>
+
+    <section id="second-crossing" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Occurrence 002</p>
+          <h2>Change one declared thing. Receipt the new occurrence.</h2>
+        </div>
+        <button id="fillSecondSample" class="ghost">Fill specimen receipt</button>
+      </div>
+
+      <div id="perturbationBanner" class="card perturbation">
+        <p class="tag">Declared perturbation</p>
+        <p>No Door 002 selected.</p>
+      </div>
+
+      <div class="card form-grid">
+        <label>Planned minutes<input id="plannedMinutes2" type="number" min="0" value="45" /></label>
+        <label>Actual minutes<input id="actualMinutes2" type="number" min="0" value="45" /></label>
+        <label class="span-2">Observed events<textarea id="observations2" placeholder="one observation per line"></textarea></label>
+        <label class="span-2">Artifacts / relics<textarea id="artifacts2" placeholder="new artifacts from this occurrence"></textarea></label>
+        <label class="span-2">Questions generated<textarea id="questions2" placeholder="new or repeated questions"></textarea></label>
+        <label class="span-2">Unresolved<textarea id="unresolved2" placeholder="what remains unresolved after this occurrence"></textarea></label>
+        <label class="span-2">Explicitly resolved from earlier<textarea id="resolved2" placeholder="only list an earlier unresolved item if the participants explicitly consider it resolved"></textarea></label>
+      </div>
+
+      <button id="saveEncounter2" class="primary">Receipt crossing → calculate delta@1</button>
+      <p id="crossingStatus2" class="status"></p>
+    </section>
+
+    <section id="delta" class="panel">
+      <p class="eyebrow">delta@1</p>
+      <h2>Difference without verdict.</h2>
+      <div id="deltaReceipt" class="card receipt muted"><p>Two occurrences are required.</p></div>
+      <button id="carryDelta" class="primary">Carry delta → update relation inventory</button>
+      <p id="deltaStatus" class="status"></p>
     </section>
   </main>
 
