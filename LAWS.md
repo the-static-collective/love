@@ -48,6 +48,18 @@ Declining a sealed packet admits none of its payload and creates no negative sco
 
 A possible door offered in correspondence remains a proposal until later mutual composition.
 
+**ACCEPTANCE APPLIES TO A REVISION**
+
+Accepting a proposal means accepting the exact current revision.
+
+**ALTERATION INVALIDATES PRIOR ACCEPTANCE**
+
+Changing the title, premise, or declared perturbation creates a new revision and returns authority to the other participant.
+
+**MUTUAL COMPOSITION != CROSSING**
+
+When both participants have composed or accepted the same revision, LOVE may promote it into a Door. Crossing still requires fresh consent.
+
 ## Crossing
 
 **RECOMMENDATION != SELECTION**
