@@ -26,6 +26,28 @@ A relation can accumulate shared artifacts, recurring places, unresolved questio
 
 The state is a receipt of what is presently known, not a verdict on what the relationship “is.”
 
+## Mail
+
+**DELIVERY != OPENING**
+
+A delivered packet exists at the transport layer. Its payload has not yet entered shared relation state.
+
+**SEALED != SHARED**
+
+Material enclosed in a letter remains outside the shared world until the recipient opens it.
+
+**HOLD != INTERPRETATION**
+
+A held turn is pending. Delay is not converted into a claim about motive, interest, avoidance, or consent.
+
+**DECLINE != PUNISHMENT**
+
+Declining a sealed packet admits none of its payload and creates no negative score.
+
+**PROPOSAL != DOOR**
+
+A possible door offered in correspondence remains a proposal until later mutual composition.
+
 ## Crossing
 
 **RECOMMENDATION != SELECTION**
