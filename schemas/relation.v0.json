@@ -4,38 +4,87 @@
   "title": "LOVE Relation v0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["relation_id", "participants", "occurrences", "inventory"],
+  "required": [
+    "relation_id",
+    "participants",
+    "occurrences",
+    "inventory"
+  ],
   "properties": {
-    "relation_id": { "type": "string", "minLength": 1 },
+    "relation_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "participants": {
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "occurrences": {
       "type": "array",
-      "items": { "$ref": "#/$defs/occurrence_ref" }
+      "items": {
+        "$ref": "#/$defs/occurrence_ref"
+      }
     },
     "inventory": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["relics", "recurring_threads", "unresolved", "mutually_reachable"],
+      "required": [
+        "relics",
+        "recurring_threads",
+        "unresolved",
+        "mutually_reachable"
+      ],
       "properties": {
-        "relics": { "type": "array", "items": { "type": "string" } },
-        "recurring_threads": { "type": "array", "items": { "type": "string" } },
-        "revealed_threads": { "type": "array", "items": { "type": "string" }, "default": [] },
-        "unresolved": { "type": "array", "items": { "type": "string" } },
-        "mutually_reachable": { "type": "array", "items": { "type": "string" } },
+        "relics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recurring_threads": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "revealed_threads": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "unresolved": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mutually_reachable": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "mail_offers": {
           "type": "array",
           "default": [],
-          "items": { "$ref": "#/$defs/mail_offer" }
+          "items": {
+            "$ref": "mail-offer.v0.json"
+          }
         },
         "opened_mail_turns": {
           "type": "array",
           "default": [],
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     }
@@ -44,22 +93,19 @@
     "occurrence_ref": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["occurrence_id", "door_id"],
+      "required": [
+        "occurrence_id",
+        "door_id"
+      ],
       "properties": {
-        "occurrence_id": { "type": "string", "minLength": 1 },
-        "door_id": { "type": "string", "minLength": 1 }
-      }
-    },
-    "mail_offer": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["proposal_id", "title", "premise", "status"],
-      "properties": {
-        "proposal_id": { "type": "string", "minLength": 1 },
-        "title": { "type": "string", "minLength": 1 },
-        "premise": { "type": "string", "minLength": 1 },
-        "declared_perturbation": { "type": ["string", "null"] },
-        "status": { "const": "proposed" }
+        "occurrence_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "door_id": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }
