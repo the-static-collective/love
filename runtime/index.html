@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LOVE Runtime 005</title>
+  <title>LOVE Runtime 006</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <p class="eyebrow">LOVE Runtime 005</p>
+      <p class="eyebrow">LOVE Runtime 006</p>
       <h1>You have received a letter.</h1>
       <p class="lede">
         Correspondence, consented doors, quests, and Dogram comparison without compatibility scores.
@@ -40,6 +40,7 @@
       <button data-step="mail-door">15. Mail Door</button>
       <button data-step="mail-crossing">16. Crossing 004</button>
       <button data-step="mail-delta">17. Mail Δ</button>
+      <button data-step="world">18. World</button>
     </nav>
 
     <section id="presence" class="panel active">
@@ -421,6 +422,71 @@
       </div>
       <button id="carryMailDelta" class="primary">Carry mail delta → update relation</button>
       <p id="mailDeltaStatus" class="status"></p>
+    </section>
+
+    <section id="world" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Runtime 006 — Relation World</p>
+          <h2>The save file is a place now.</h2>
+          <p class="lede-small">This view is derived from the relation state. It does not rank anything. It shows what is traveling, what has entered shared history, and what remains reachable.</p>
+        </div>
+        <button id="seedWorldSpecimen" class="ghost">Form specimen place</button>
+      </div>
+
+      <div class="world-map">
+        <section class="world-region mailbox-region">
+          <p class="tag">Mailbox</p>
+          <h3>In transit</h3>
+          <div id="worldMailbox" class="world-nodes"></div>
+        </section>
+
+        <section class="world-region room-region">
+          <p class="tag">The Room</p>
+          <h3>Jointly admitted history</h3>
+          <div id="worldRoom" class="world-nodes"></div>
+        </section>
+
+        <section class="world-region horizon-region">
+          <p class="tag">The Horizon</p>
+          <h3>Reachable, not crossed</h3>
+          <div id="worldHorizon" class="world-nodes"></div>
+        </section>
+      </div>
+
+      <div class="card world-path-card">
+        <p class="tag">Relation paths</p>
+        <div id="worldEdges"></div>
+      </div>
+
+      <div class="card">
+        <p class="tag">Form a place</p>
+        <p>A place is not inferred automatically. Select historical material and give the composition a name.</p>
+        <label>Place name<input id="placeName" placeholder="The Postcard Table" /></label>
+
+        <div class="world-form-grid">
+          <div>
+            <strong>Occurrences</strong>
+            <div id="placeOccurrenceChoices" class="check-stack"></div>
+          </div>
+          <div>
+            <strong>Relics</strong>
+            <div id="placeRelicChoices" class="check-stack"></div>
+          </div>
+          <div>
+            <strong>Unresolved questions</strong>
+            <div id="placeQuestionChoices" class="check-stack"></div>
+          </div>
+        </div>
+
+        <button id="formPlace" class="primary">THE CROSSING BECOMES A PLACE</button>
+        <p id="placeStatus" class="status"></p>
+      </div>
+
+      <div class="card">
+        <p class="tag">Formed places</p>
+        <div id="formedPlaces" class="nearby"></div>
+      </div>
     </section>
   </main>
 
