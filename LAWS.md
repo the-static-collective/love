@@ -38,6 +38,18 @@ LOVE may derive candidate sources and provenance. It may not silently declare th
 
 A relation place may correspond to a physical location, but it may also be a recurring ritual, correspondence cluster, shared table, question-space, or other jointly meaningful structure.
 
+**ADDRESS != RECIPIENT**
+
+A letter may be addressed through a relation place, but the human participant remains the recipient and retains open / hold / decline authority.
+
+**PLACE CONTEXT IS A SNAPSHOT**
+
+Addressing through a place carries a frozen snapshot of the place's selected historical context. Later changes to the place do not rewrite the context carried by the historical turn.
+
+**ADDRESSING != REENTRY**
+
+Invoking a place as correspondence context does not recreate or re-run the occurrences that formed it. It creates a new mail turn that points back to them.
+
 ## Mail
 
 **DELIVERY != OPENING**
