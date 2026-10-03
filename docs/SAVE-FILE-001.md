@@ -15,35 +15,49 @@ The save file belongs to the **relation**.
 ```text
 SAVE FILE
 ├── occurrences
-├── letters
 ├── crossed doors
 ├── relics
 ├── unresolved questions
 ├── reachable doors
 ├── Dogram probes
-└── return history
+├── return history
+├── opened mail turns
+├── revealed threads
+└── open mail proposals
 ```
 
 It does not contain a master compatibility number.
 
 ## A turn
 
-A future mail-native turn can be modeled as:
+Runtime 004 makes the turn packet executable:
 
 ```text
-receive letter
--> choose what to reveal
--> choose / alter / decline a door
--> perform quest or correspondence move
--> create artifact
--> receipt what actually happened
--> mutate shared world state
--> send next letter
+compose letter
+-> seal packet
+-> deliver
+-> open / hold / decline unopened
+-> explicit payload mutation
+-> next sender
 ```
 
-That makes a letter more than chat transport.
+A turn can carry words, one reveal, one artifact, and one possible door proposal.
 
-It is a **turn packet**.
+## Mail authority
+
+```text
+DELIVERY != OPENING
+SEALED != SHARED
+PROPOSAL != DOOR
+```
+
+The sender can offer.
+
+The recipient controls admission.
+
+Holding is not interpreted.
+
+Declining unopened does not expose the payload to shared relation state.
 
 ## The players do not become characters
 
