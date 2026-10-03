@@ -18,13 +18,8 @@ body {
   font-family: Georgia, "Times New Roman", serif;
 }
 
-button, input, textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
 
 .shell {
   width: min(1040px, calc(100% - 32px));
@@ -32,9 +27,7 @@ button {
   padding: 48px 0 80px;
 }
 
-.hero {
-  padding: 24px 0 36px;
-}
+.hero { padding: 24px 0 36px; }
 
 .eyebrow, .tag {
   margin: 0 0 8px;
@@ -45,9 +38,7 @@ button {
   color: var(--muted);
 }
 
-h1, h2, p {
-  margin-top: 0;
-}
+h1, h2, h3, p { margin-top: 0; }
 
 h1 {
   max-width: 760px;
@@ -63,7 +54,7 @@ h2 {
 }
 
 .lede {
-  max-width: 720px;
+  max-width: 760px;
   font-size: 20px;
   line-height: 1.5;
 }
@@ -95,9 +86,7 @@ h2 {
   backdrop-filter: blur(8px);
 }
 
-.steps button,
-.ghost,
-.danger {
+.steps button, .ghost, .danger {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
@@ -117,9 +106,7 @@ h2 {
   padding: 38px 0 10px;
 }
 
-.panel.active {
-  display: block;
-}
+.panel.active { display: block; }
 
 .panel-heading {
   display: flex;
@@ -128,8 +115,7 @@ h2 {
   align-items: start;
 }
 
-.two-col,
-.relation-grid {
+.two-col, .relation-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
@@ -140,18 +126,16 @@ h2 {
   background: var(--paper);
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 10px 40px rgba(50, 40, 25, .04);
+  box-shadow: 0 10px 40px rgba(50,40,25,.04);
 }
 
-.participant label,
-.form-grid label {
+.participant label, .form-grid label {
   display: block;
   margin-top: 14px;
   font-size: 14px;
 }
 
-input,
-textarea {
+input, textarea {
   width: 100%;
   margin-top: 6px;
   border: 1px solid var(--line);
@@ -166,8 +150,7 @@ textarea {
   resize: vertical;
 }
 
-.privacy-note,
-.status {
+.privacy-note, .status {
   color: var(--muted);
   margin: 16px 0;
 }
@@ -186,9 +169,7 @@ textarea {
   border-color: color-mix(in srgb, var(--danger) 40%, var(--line));
 }
 
-.prompt {
-  margin-bottom: 18px;
-}
+.prompt, .history-card, .perturbation { margin-bottom: 18px; }
 
 blockquote {
   margin: 0;
@@ -203,18 +184,13 @@ blockquote {
   margin-top: 14px;
 }
 
-.check input {
+.check input, .door-choice input {
   width: auto;
   margin: 0;
 }
 
-.door-card {
-  margin: 18px 0;
-}
-
-.muted {
-  opacity: .72;
-}
+.door-card { margin: 18px 0; }
+.muted { opacity: .72; }
 
 .accept-row {
   display: flex;
@@ -228,18 +204,10 @@ blockquote {
   gap: 14px;
 }
 
-.form-grid label {
-  margin: 0;
-}
+.form-grid label { margin: 0; }
+.span-2 { grid-column: 1 / -1; }
 
-.span-2 {
-  grid-column: 1 / -1;
-}
-
-.receipt ul,
-.card ul {
-  margin-bottom: 0;
-}
+.receipt ul, .card ul { margin-bottom: 0; }
 
 .nearby {
   display: grid;
@@ -248,12 +216,48 @@ blockquote {
 
 .nearby article {
   border-top: 1px solid var(--line);
-  padding-top: 12px;
+  padding-top: 14px;
 }
 
 .nearby article:first-child {
   border-top: 0;
   padding-top: 0;
+}
+
+.door-choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.door-choice input { margin-top: 5px; }
+
+.history-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.history-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.history-item p { margin-bottom: 4px; }
+
+.perturbation {
+  border-style: dashed;
+}
+
+.delta-equation {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--soft);
+  border-radius: 10px;
+  padding: 12px;
+  overflow-x: auto;
 }
 
 .footer-actions {
@@ -263,17 +267,8 @@ blockquote {
 }
 
 @media (max-width: 760px) {
-  .two-col,
-  .relation-grid,
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .span-2 {
-    grid-column: auto;
-  }
-
-  .panel-heading {
-    flex-direction: column;
-  }
+  .two-col, .relation-grid, .form-grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: auto; }
+  .panel-heading { flex-direction: column; }
+  .history-item { grid-template-columns: 1fr; gap: 4px; }
 }
