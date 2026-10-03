@@ -1,109 +1,90 @@
-# LOVE Runtime 005
+# LOVE Runtime 006
 
 A zero-dependency browser specimen for the LOVE protocol.
 
 ## Run
 
-Open `runtime/index.html` directly in a modern browser.
+Open runtime/index.html directly in a modern browser.
 
 No build step.
 No server required.
 No network required after the files are present.
 
-## What Runtime 005 proves
+## What Runtime 006 proves
 
-Runtime 005 closes the mail-to-world loop:
+Runtime 006 adds a derived world view over the existing save file:
 
-```text
-letter turn
--> opened door proposal
--> accept / alter / decline
--> mutual composition
--> real Door
--> fresh crossing consent
--> occurrence 004
--> delta@1
--> relation update
-```
+~~~text
+MAILBOX     -> in transit
+THE ROOM    -> jointly admitted history
+THE HORIZON -> reachable but uncrossed possibility
+~~~
 
-State is stored under:
+It also makes this law executable:
 
-```text
-love-runtime-005
-```
+~~~text
+THE CROSSING BECOMES A PLACE
+~~~
 
-Runtime 005 migrates Runtime 004, 003, 002, and 001 saves.
+Participants can select historical occurrences, relics, and unresolved questions, give the composition a name, and persist that place into the relation save.
 
-## Negotiation model
+## World map
 
-Each mail offer has a current revision.
+The map is derived from receipts and current state.
 
-The participant who authored that revision is treated as consenting to that revision.
+It renders nodes for:
 
-The other participant holds the response.
+- mail
+- proposal revisions
+- Doors
+- occurrences
+- relics
+- questions
+- formed places
 
-They may:
+and edges for:
 
-- accept the current revision unchanged
-- alter it into a new counterproposal
-- decline it
+- delivery/proposal provenance
+- proposal promotion
+- Door crossings
+- artifact creation
+- question generation
+- Dogram comparison
+- place formation
+- reachability
 
-An alteration creates a new revision and flips the response to the other participant.
+## Important law
 
-```text
-ACCEPTANCE APPLIES TO A REVISION
-ALTERATION INVALIDATES PRIOR ACCEPTANCE
-```
+~~~text
+THE MAP IS A VIEW OF THE SAVE FILE.
+THE MAP IS NOT AN AUTHORITY OVER THE SAVE FILE.
+~~~
 
-## Promotion
+Runtime 006 does not silently infer meaning from clusters.
 
-An accepted revision is promoted into a real Door.
+~~~text
+CLUSTER != PLACE
+PLACE FORMATION REQUIRES AUTHORSHIP
+~~~
 
-That promotion records:
+## State
 
-- source mail proposal id
-- source mail revision
-- prior occurrence used for the next Dogram comparison
+Runtime 006 stores state under:
 
-Promotion is not a crossing.
+~~~text
+love-runtime-006
+~~~
 
-```text
-MUTUAL COMPOSITION != CROSSING
-DOOR != CROSSING
-```
-
-Both participants must still explicitly accept the composed Door before occurrence 004 can be receipted.
-
-## Mail-origin delta
-
-After occurrence 004, Runtime 005 compares it to the source occurrence captured when the Door was composed.
-
-The result is a normal categorical `delta@1` receipt.
-
-No compatibility score is created.
-
-## Transport immutability
-
-The proposal carried by an opened letter is copied into relation state before negotiation.
-
-Negotiating the relation copy does not rewrite the historical delivered packet.
-
-```text
-TRANSPORT HISTORY != NEGOTIATION STATE
-```
+and migrates Runtime 005 and earlier saves.
 
 ## Next useful increment
 
-Runtime 006 can make multiple simultaneously reachable Doors and mail offers form a small **world map**:
+Runtime 007 could let formed places act as active correspondence addresses:
 
-```text
-letters
--> relics
--> unresolved threads
--> negotiated doors
--> crossed places
--> returnable places
--> map of the relation
-```
+~~~text
+send letter to a person
+or
+send letter to a place in the relation
+~~~
 
-That is where the save file starts looking like a tiny shared world instead of a linear transcript.
+A letter addressed to The Postcard Table could reopen its relics/questions as context without forcing either participant to re-explain the whole history.
