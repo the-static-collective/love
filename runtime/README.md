@@ -1,4 +1,4 @@
-# LOVE Runtime 001
+# LOVE Runtime 002
 
 A zero-dependency browser specimen for the LOVE protocol.
 
@@ -10,9 +10,9 @@ No build step.
 No server required.
 No network required after the files are present.
 
-## What it proves
+## What Runtime 002 proves
 
-The runtime implements one complete local loop:
+The runtime now implements a complete comparative loop:
 
 ```text
 presence
@@ -20,24 +20,46 @@ presence
 -> two letters
 -> mutual open
 -> Door 001
--> mutual door acceptance
--> encounter receipt
--> Dogram baseline
+-> occurrence 001
+-> baseline@1
 -> relation inventory
--> nearby doors
+-> choose one non-ranked nearby door
+-> mutual acceptance of Door 002
+-> occurrence 002
+-> delta@1
+-> updated relation inventory
 ```
 
-State is stored in `localStorage` under:
+Runtime 002 migrates state from `love-runtime-001` when possible and stores current state under:
 
 ```text
-love-runtime-001
+love-runtime-002
 ```
 
 The relation can be exported as JSON.
 
+## delta@1 behavior
+
+The runtime compares only receipt-level evidence it actually has:
+
+- actual duration
+- exact repeated / new artifacts
+- exact repeated / new questions
+- exact repeated / new observations
+- explicit prior resolutions
+- currently unresolved items
+
+It deliberately does **not** infer that a missing observation disappeared.
+
+```text
+OMISSION != NONEXISTENCE
+```
+
+A prior unresolved item is only removed from the relation inventory when it is explicitly listed in `resolved_previous`.
+
 ## Important limitation
 
-Runtime 001 is a protocol specimen, not a production dating service.
+Runtime 002 is a protocol specimen, not a production dating service.
 
 It intentionally does not implement:
 - authentication
@@ -60,16 +82,21 @@ It intentionally does not implement:
 - Door != Crossing
 - baseline observations do not become identity claims
 - first crossing does not fabricate a comparative delta
+- second crossing declares its perturbation before the receipt
+- omission does not become disappearance
+- resolution requires an explicit receipt
 
 ## Next useful runtime increment
 
-Runtime 002 should add **Occurrence 002** and a real `delta@1` comparison.
+Runtime 003 should make **reentry** executable:
 
-The simplest path:
+```text
+occurrence 001
+-> occurrence 002
+-> choose a prior door
+-> reenter@1
+-> occurrence 003
+-> compare return against historical occurrences
+```
 
-1. choose one of the nearby doors,
-2. declare exactly one perturbation,
-3. record a second occurrence,
-4. compare the two receipts,
-5. emit categorical residuals,
-6. update reachability without scoring either participant.
+That would make the “50 First Dates” law operational rather than documentary.
