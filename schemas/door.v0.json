@@ -14,14 +14,59 @@
     "requires_mutual_acceptance"
   ],
   "properties": {
-    "door_id": { "type": "string", "minLength": 1 },
-    "title": { "type": "string", "minLength": 1 },
-    "premise": { "type": "string", "minLength": 1 },
-    "quest": { "$ref": "quest.v0.json" },
-    "declared_perturbation": { "type": ["string", "null"] },
-    "why_reachable": { "type": "array", "items": { "type": "string" } },
-    "constraints": { "type": "array", "items": { "type": "string" } },
-    "what_it_might_reveal": { "type": ["string", "null"] },
-    "requires_mutual_acceptance": { "const": true }
+    "door_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "premise": {
+      "type": "string",
+      "minLength": 1
+    },
+    "quest": {
+      "$ref": "quest.v0.json"
+    },
+    "declared_perturbation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "why_reachable": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "what_it_might_reveal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requires_mutual_acceptance": {
+      "const": true
+    },
+    "reenters_door_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_occurrence_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   }
 }
