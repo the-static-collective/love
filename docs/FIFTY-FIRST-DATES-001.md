@@ -25,15 +25,35 @@ occurrence_003 != occurrence_031
 
 ## reenter@1
 
-A prior door can be intentionally reopened.
+A prior crossed door can be intentionally reopened.
+
+The source door is reconstructed, but the new crossing receives a fresh occurrence identity.
 
 The comparison asks:
 - what persisted?
 - what changed?
-- what disappeared?
+- what actually returned?
 - what newly appeared?
+- what was explicitly resolved?
 - what became reachable?
 - what became unreachable?
+
+It does **not** ask what “disappeared” merely because something was omitted from the new receipt.
+
+```text
+OMISSION != NONEXISTENCE
+```
+
+## Historical address
+
+A re-entry receipt names both occurrences:
+
+```text
+reenter@1(door-001):
+occurrence-001 -> occurrence-003
+```
+
+This matters because a door can be crossed more than once without the crossings becoming interchangeable.
 
 ## KEEP / RELEASE / REDISCOVER
 
@@ -46,8 +66,12 @@ This is not literal amnesia. It is a composition rule preventing the application
 A later encounter may surface a prior shared artifact:
 
 ```text
-RELIC FOUND:
-On occurrence 003, both participants independently photographed the same yellow door.
+RETURNED RELIC:
+tiny ceramic duck
+source: occurrence-001
+returned: occurrence-003
 ```
 
-The relic is evidence of a past occurrence, not proof of a trait.
+The relic is evidence of historical continuity.
+
+It is not proof of a personality trait or relationship destiny.
