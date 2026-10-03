@@ -1,4 +1,5 @@
-const STORAGE_KEY = "love-runtime-006";
+const STORAGE_KEY = "love-runtime-007";
+const LEGACY_KEY_006 = "love-runtime-006";
 const LEGACY_KEY_005 = "love-runtime-005";
 const LEGACY_KEY_004 = "love-runtime-004";
 const LEGACY_KEY_003 = "love-runtime-003";
@@ -21,7 +22,7 @@ const sample = {
 };
 
 const emptyState = () => ({
-  version: "love-runtime-006",
+  version: "love-runtime-007",
   participants: { A: null, B: null },
   letters: { prompt: "", A: "", B: "", openA: false, openB: false },
   firstDoor: null,
@@ -106,6 +107,8 @@ function normalizeLoadedState(raw) {
       explicit_reveal: turn.explicit_reveal || "",
       enclosed_artifact: turn.enclosed_artifact || "",
       door_proposal: turn.door_proposal || null,
+      addressed_place_id: turn.addressed_place_id || null,
+      place_context_snapshot: turn.place_context_snapshot || null,
       opened_effects: turn.opened_effects || null
     }))
   };
@@ -139,6 +142,7 @@ function normalizeLoadedState(raw) {
     relics: place.relics || [],
     unresolved: place.unresolved || [],
     reachable_from_here: place.reachable_from_here || [],
+    mail_turn_ids: place.mail_turn_ids || [],
     formed_after_occurrence_count: place.formed_after_occurrence_count ?? base.relation.occurrence_count
   }));
   return base;
@@ -151,12 +155,23 @@ function loadState() {
     const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (current) return normalizeLoadedState(current);
 
+    const v6 = JSON.parse(localStorage.getItem(LEGACY_KEY_006));
+    if (v6) {
+      const migrated = normalizeLoadedState({
+        ...emptyState(),
+        ...v6,
+        version: "love-runtime-007"
+      });
+      saveRaw(migrated);
+      return migrated;
+    }
+
     const v5 = JSON.parse(localStorage.getItem(LEGACY_KEY_005));
     if (v5) {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v5,
-        version: "love-runtime-006"
+        version: "love-runtime-007"
       });
       saveRaw(migrated);
       return migrated;
@@ -167,7 +182,7 @@ function loadState() {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v4,
-        version: "love-runtime-006",
+        version: "love-runtime-007",
         selected_offer_id: null,
         mailDoor: null,
         mailDoorAccepted: { A: false, B: false },
@@ -182,7 +197,7 @@ function loadState() {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v3,
-        version: "love-runtime-006",
+        version: "love-runtime-007",
         mail: { next_sender: "A", turns: [] }
       });
       saveRaw(migrated);
@@ -194,7 +209,7 @@ function loadState() {
       const migrated = normalizeLoadedState({
         ...emptyState(),
         ...v2,
-        version: "love-runtime-006",
+        version: "love-runtime-007",
         reentryDoor: null,
         reentryDoorAccepted: { A: false, B: false },
         reentryApplied: false,
@@ -548,6 +563,36 @@ function runDelta(previous, current, door) {
   };
 }
 
+function placeById(placeId) {
+  return (state.relation?.places || []).find(place => place.place_id === placeId) || null;
+}
+
+function snapshotPlaceContext(place) {
+  if (!place) return null;
+  return {
+    place_id: place.place_id,
+    name: place.name,
+    source_occurrence_ids: [...(place.source_occurrence_ids || [])],
+    relics: [...(place.relics || [])],
+    unresolved: [...(place.unresolved || [])],
+    reachable_from_here: [...(place.reachable_from_here || [])],
+    snapshot_after_occurrence_count: state.relation.occurrence_count
+  };
+}
+
+function placeContextHtml(snapshot) {
+  if (!snapshot) {
+    return "<p>No relation place selected. This turn is addressed directly to the person.</p>";
+  }
+  return `
+    <p class="tag">via ${escapeHtml(snapshot.name)}</p>
+    <p><strong>Historical occurrences:</strong> ${snapshot.source_occurrence_ids.map(escapeHtml).join(", ") || "none"}</p>
+    <p><strong>Relics reopened as context:</strong> ${snapshot.relics.map(escapeHtml).join(", ") || "none"}</p>
+    <p><strong>Unresolved questions:</strong> ${snapshot.unresolved.map(escapeHtml).join(" · ") || "none"}</p>
+    <p><strong>Horizon when addressed:</strong> ${snapshot.reachable_from_here.map(escapeHtml).join(" · ") || "none"}</p>
+  `;
+}
+
 function participantName(key) {
   return state.participants?.[key]?.name || (key === "A" ? "Participant A" : "Participant B");
 }
@@ -567,6 +612,13 @@ function mailTurnNumber() {
 }
 
 function clearMailComposer() {
+  const address = document.querySelector("#mailPlaceAddress");
+  if (address) address.value = "";
+  const context = document.querySelector("#mailPlaceContext");
+  if (context) {
+    context.classList.add("muted");
+    context.innerHTML = placeContextHtml(null);
+  }
   ["#mailBody", "#mailReveal", "#mailArtifact", "#mailDoorTitle", "#mailDoorPremise", "#mailDoorPerturbation"]
     .forEach(selector => {
       const el = document.querySelector(selector);
@@ -587,6 +639,7 @@ function renderMailHistory(turns) {
 
     const payload = opened
       ? `
+        ${turn.place_context_snapshot ? `<div class="place-address-context">${placeContextHtml(turn.place_context_snapshot)}</div>` : ""}
         ${turn.explicit_reveal ? `<p><strong>Reveal:</strong> ${escapeHtml(turn.explicit_reveal)}</p>` : ""}
         ${turn.enclosed_artifact ? `<p><strong>Artifact:</strong> ${escapeHtml(turn.enclosed_artifact)}</p>` : ""}
         ${turn.door_proposal ? `<p><strong>Door proposal:</strong> ${escapeHtml(turn.door_proposal.title)}</p>` : ""}
@@ -600,6 +653,7 @@ function renderMailHistory(turns) {
           <strong>${escapeHtml(turn.turn_id)}</strong>
           · ${escapeHtml(participantName(turn.sender_participant))}
           → ${escapeHtml(participantName(turn.recipient_participant))}
+          ${turn.place_context_snapshot ? ` via ${escapeHtml(turn.place_context_snapshot.name)}` : ""}
         </p>
         ${body}
         ${payload}
@@ -653,6 +707,10 @@ function deriveWorld() {
     }
     if (turn.status === "opened") {
       room.push(worldNode("opened mail", turn.turn_id, `${participantName(turn.sender_participant)} → ${participantName(turn.recipient_participant)}`, "opened into shared history"));
+    }
+    if (turn.addressed_place_id) {
+      const addressed = placeById(turn.addressed_place_id);
+      edges.push(worldEdge(turn.turn_id, "addressed via", addressed?.name || turn.addressed_place_id));
     }
     if (turn.door_proposal) {
       edges.push(worldEdge(turn.turn_id, "carried proposal", turn.door_proposal.proposal_id));
@@ -1016,6 +1074,22 @@ function render() {
   document.querySelector("#mailSenderLabel").textContent = participantName(senderKey);
   document.querySelector("#mailRecipientLabel").textContent = participantName(recipientKey);
 
+  const placeSelect = document.querySelector("#mailPlaceAddress");
+  const currentAddress = placeSelect.value;
+  placeSelect.innerHTML = [
+    '<option value="">Direct to person</option>',
+    ...(state.relation.places || []).map(place =>
+      `<option value="${escapeHtml(place.place_id)}">${escapeHtml(place.name)}</option>`
+    )
+  ].join("");
+  if ((state.relation.places || []).some(place => place.place_id === currentAddress)) {
+    placeSelect.value = currentAddress;
+  }
+  const selectedPlace = placeById(placeSelect.value);
+  const placeContext = document.querySelector("#mailPlaceContext");
+  placeContext.classList.toggle("muted", !selectedPlace);
+  placeContext.innerHTML = placeContextHtml(snapshotPlaceContext(selectedPlace));
+
   const mailHeader = document.querySelector("#mailTurnHeader");
   mailHeader.innerHTML = pending
     ? `<p class="tag">${escapeHtml(pending.turn_id)} · ${escapeHtml(pending.status)}</p>
@@ -1039,6 +1113,7 @@ function render() {
       <p><strong>From:</strong> ${escapeHtml(participantName(pending.sender_participant))}</p>
       <p><strong>To:</strong> ${escapeHtml(participantName(pending.recipient_participant))}</p>
       <p><strong>Envelope:</strong> sealed letter${enclosureCount ? ` + ${enclosureCount} enclosure${enclosureCount === 1 ? "" : "s"}` : ""}</p>
+      ${pending.place_context_snapshot ? `<p><strong>Addressed via:</strong> ${escapeHtml(pending.place_context_snapshot.name)}</p>` : ""}
       <p><strong>Status:</strong> ${escapeHtml(pending.status)}</p>
     `;
   } else {
@@ -1568,6 +1643,13 @@ document.querySelector("#carryReentry").addEventListener("click", () => {
   showStep("relation");
 });
 
+document.querySelector("#mailPlaceAddress").addEventListener("change", event => {
+  const place = placeById(event.target.value || null);
+  const context = document.querySelector("#mailPlaceContext");
+  context.classList.toggle("muted", !place);
+  context.innerHTML = placeContextHtml(snapshotPlaceContext(place));
+});
+
 document.querySelector("#fillMailSample").addEventListener("click", () => {
   const sender = state.mail?.next_sender || "A";
   const senderName = participantName(sender);
@@ -1601,6 +1683,9 @@ document.querySelector("#sendMailTurn").addEventListener("click", () => {
   const recipient = otherParticipant(sender);
   const turnId = `mail-${String(mailTurnNumber()).padStart(3, "0")}`;
   const artifact = document.querySelector("#mailArtifact").value.trim();
+  const addressedPlaceId = document.querySelector("#mailPlaceAddress").value || null;
+  const addressedPlace = placeById(addressedPlaceId);
+  const placeContextSnapshot = snapshotPlaceContext(addressedPlace);
   const proposalTitle = document.querySelector("#mailDoorTitle").value.trim();
   const proposalPremise = document.querySelector("#mailDoorPremise").value.trim();
   const proposalPerturbation = document.querySelector("#mailDoorPerturbation").value.trim();
@@ -1637,12 +1722,14 @@ document.querySelector("#sendMailTurn").addEventListener("click", () => {
     },
     explicit_reveal: document.querySelector("#mailReveal").value.trim(),
     enclosed_artifact: artifact,
+    addressed_place_id: addressedPlaceId,
+    place_context_snapshot: placeContextSnapshot,
     door_proposal: proposal,
     opened_effects: null
   };
 
   state.mail.turns.push(turn);
-  status.textContent = `${turnId} sealed and delivered. The shared world has not changed.`;
+  status.textContent = `${turnId} sealed and delivered${addressedPlace ? ` via ${addressedPlace.name}` : ""}. The shared world has not changed.`;
   clearMailComposer();
   saveState();
   render();
@@ -1688,7 +1775,8 @@ document.querySelector("#openMailTurn").addEventListener("click", () => {
   const effects = {
     revealed_threads_added: [],
     relics_added: [],
-    mail_offers_added: []
+    mail_offers_added: [],
+    places_linked: []
   };
 
   if (pending.explicit_reveal) {
@@ -1718,6 +1806,14 @@ document.querySelector("#openMailTurn").addEventListener("click", () => {
     }
   }
 
+  if (pending.addressed_place_id) {
+    const place = placeById(pending.addressed_place_id);
+    if (place) {
+      place.mail_turn_ids = unique([...(place.mail_turn_ids || []), pending.turn_id]);
+      effects.places_linked.push(place.place_id);
+    }
+  }
+
   state.relation.opened_mail_turns = unique([
     ...(state.relation.opened_mail_turns || []),
     pending.turn_id
@@ -1726,7 +1822,9 @@ document.querySelector("#openMailTurn").addEventListener("click", () => {
   pending.opened_effects = effects;
   state.mail.next_sender = pending.recipient_participant;
 
-  status.textContent = "Opened. Only the explicitly enclosed payload entered the shared world. The recipient now holds the next turn.";
+  status.textContent = pending.place_context_snapshot
+    ? `Opened via ${pending.place_context_snapshot.name}. The frozen place context reopened, and this turn joined that place's history.`
+    : "Opened. Only the explicitly enclosed payload entered the shared world. The recipient now holds the next turn.";
   saveState();
   render();
 });
@@ -2030,6 +2128,7 @@ document.querySelector("#seedWorldSpecimen").addEventListener("click", () => {
       relics: postcardRelics,
       unresolved: travelQuestions,
       reachable_from_here: unique([...(state.relation.mutually_reachable || [])]),
+      mail_turn_ids: [],
       formed_after_occurrence_count: state.relation.occurrence_count
     }
   ];
@@ -2045,7 +2144,7 @@ document.querySelector("#exportState").addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "love-relation-006.json";
+  a.download = "love-relation-007.json";
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -2054,6 +2153,7 @@ document.querySelector("#resetState").addEventListener("click", () => {
   if (!confirm("Reset the local LOVE runtime state?")) return;
   state = emptyState();
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(LEGACY_KEY_006);
   localStorage.removeItem(LEGACY_KEY_005);
   localStorage.removeItem(LEGACY_KEY_004);
   localStorage.removeItem(LEGACY_KEY_003);
