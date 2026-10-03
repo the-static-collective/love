@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LOVE Runtime 006</title>
+  <title>LOVE Runtime 007</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <p class="eyebrow">LOVE Runtime 006</p>
+      <p class="eyebrow">LOVE Runtime 007</p>
       <h1>You have received a letter.</h1>
       <p class="lede">
         Correspondence, consented doors, quests, and Dogram comparison without compatibility scores.
@@ -289,7 +289,7 @@
     <section id="mailbox" class="panel">
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">YOUR MAIL — Runtime 005</p>
+          <p class="eyebrow">YOUR MAIL — Runtime 007</p>
           <h2>Letters are turns.</h2>
           <p class="lede-small">A sealed packet can carry words, one explicit reveal, one artifact, and one possible door. Nothing enters the shared world until the recipient opens it.</p>
         </div>
@@ -304,6 +304,15 @@
           <div><span class="tag">From</span><strong id="mailSenderLabel">A</strong></div>
           <div class="mail-arrow">→</div>
           <div><span class="tag">To</span><strong id="mailRecipientLabel">B</strong></div>
+        </div>
+
+        <label>Address via relation place
+          <select id="mailPlaceAddress">
+            <option value="">Direct to person</option>
+          </select>
+        </label>
+        <div id="mailPlaceContext" class="place-address-context muted">
+          <p>No relation place selected. This turn is addressed directly to the person.</p>
         </div>
 
         <label>Letter<textarea id="mailBody" rows="10" placeholder="Write the turn letter..."></textarea></label>
@@ -427,7 +436,7 @@
     <section id="world" class="panel">
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">Runtime 006 — Relation World</p>
+          <p class="eyebrow">Relation World</p>
           <h2>The save file is a place now.</h2>
           <p class="lede-small">This view is derived from the relation state. It does not rank anything. It shows what is traveling, what has entered shared history, and what remains reachable.</p>
         </div>
