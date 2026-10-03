@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LOVE Runtime 002</title>
+  <title>LOVE Runtime 003</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <p class="eyebrow">LOVE Runtime 002</p>
+      <p class="eyebrow">LOVE Runtime 003</p>
       <h1>You have received a letter.</h1>
       <p class="lede">
         Correspondence, consented doors, quests, and Dogram comparison without compatibility scores.
@@ -32,6 +32,9 @@
       <button data-step="next-door">7. Door 002</button>
       <button data-step="second-crossing">8. Crossing 002</button>
       <button data-step="delta">9. Δ</button>
+      <button data-step="return-door">10. Return</button>
+      <button data-step="third-crossing">11. Crossing 003</button>
+      <button data-step="reentry">12. Re-entry</button>
     </nav>
 
     <section id="presence" class="panel active">
@@ -162,6 +165,14 @@
         <p id="nextDoorPrepStatus" class="status"></p>
       </div>
 
+      <div class="card return-card">
+        <p class="tag">50 First Dates — reenter a crossed door</p>
+        <p>Choose a historical crossing. LOVE will reopen its door as a new occurrence without collapsing the two events.</p>
+        <div id="reentryChoices" class="nearby"></div>
+        <button id="prepareReentry" class="primary">Prepare Return Door</button>
+        <p id="reentryPrepStatus" class="status"></p>
+      </div>
+
       <div class="footer-actions">
         <button id="exportState" class="ghost">Export relation JSON</button>
         <button id="resetState" class="danger">Reset local runtime</button>
@@ -216,6 +227,57 @@
       <div id="deltaReceipt" class="card receipt muted"><p>Two occurrences are required.</p></div>
       <button id="carryDelta" class="primary">Carry delta → update relation inventory</button>
       <p id="deltaStatus" class="status"></p>
+    </section>
+
+    <section id="return-door" class="panel">
+      <p class="eyebrow">reenter@1 — Return Door</p>
+      <h2>Same door. New historical occurrence.</h2>
+      <div id="reentryDoorCard" class="door-card card muted">
+        <h2>No return door prepared.</h2>
+        <p>Choose a prior crossing from the relation inventory.</p>
+      </div>
+      <div class="accept-row">
+        <label class="check"><input type="checkbox" id="accept3A" /> <span id="accept3ALabel">A</span> accepts this return.</label>
+        <label class="check"><input type="checkbox" id="accept3B" /> <span id="accept3BLabel">B</span> accepts this return.</label>
+      </div>
+      <button id="crossReentryDoor" class="primary">Cross Return Door</button>
+      <p id="reentryDoorStatus" class="status"></p>
+    </section>
+
+    <section id="third-crossing" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Occurrence 003</p>
+          <h2>The setup returns. The event does not.</h2>
+        </div>
+        <button id="fillThirdSample" class="ghost">Fill return specimen</button>
+      </div>
+
+      <div id="reentryBanner" class="card perturbation">
+        <p class="tag">Re-entry comparison</p>
+        <p>No return door prepared.</p>
+      </div>
+
+      <div class="card form-grid">
+        <label>Planned minutes<input id="plannedMinutes3" type="number" min="0" value="45" /></label>
+        <label>Actual minutes<input id="actualMinutes3" type="number" min="0" value="45" /></label>
+        <label class="span-2">Observed events<textarea id="observations3" placeholder="one observation per line"></textarea></label>
+        <label class="span-2">Artifacts / returning relics<textarea id="artifacts3" placeholder="repeat an old relic only if it actually returned"></textarea></label>
+        <label class="span-2">Questions generated<textarea id="questions3" placeholder="new or repeated questions"></textarea></label>
+        <label class="span-2">Unresolved<textarea id="unresolved3" placeholder="what remains unresolved after the return"></textarea></label>
+        <label class="span-2">Explicitly resolved from earlier<textarea id="resolved3" placeholder="only list items the participants explicitly consider resolved"></textarea></label>
+      </div>
+
+      <button id="saveEncounter3" class="primary">Receipt return → calculate reenter@1</button>
+      <p id="crossingStatus3" class="status"></p>
+    </section>
+
+    <section id="reentry" class="panel">
+      <p class="eyebrow">reenter@1</p>
+      <h2>What survived the return?</h2>
+      <div id="reentryReceipt" class="card receipt muted"><p>A returned occurrence is required.</p></div>
+      <button id="carryReentry" class="primary">Carry return → update relation inventory</button>
+      <p id="reentryStatus" class="status"></p>
     </section>
   </main>
 
