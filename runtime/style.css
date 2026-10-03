@@ -376,3 +376,147 @@ blockquote {
     justify-self: start;
   }
 }
+
+
+.world-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.world-region {
+  min-height: 320px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 18px;
+  background: rgba(255,255,255,.24);
+}
+
+.world-region h3 {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.world-nodes {
+  display: grid;
+  gap: 10px;
+}
+
+.world-node {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  padding: 12px;
+}
+
+.world-node p {
+  margin-bottom: 5px;
+}
+
+.world-node .tag {
+  margin-bottom: 5px;
+}
+
+.mailbox-region {
+  border-style: dashed;
+}
+
+.horizon-region {
+  border-style: dashed;
+}
+
+.room-region {
+  box-shadow: inset 0 0 0 1px rgba(40,37,31,.03);
+}
+
+.world-path-card {
+  margin-bottom: 18px;
+}
+
+.world-edge {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding: 10px 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.world-edge:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.world-edge .edge-arrow {
+  color: var(--muted);
+}
+
+.world-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.check-stack {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.check-stack label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+}
+
+.check-stack input {
+  width: auto;
+  margin: 2px 0 0;
+}
+
+.place-card {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.place-card:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.place-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.place-links span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+@media (max-width: 860px) {
+  .world-map,
+  .world-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .world-edge {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .world-edge .edge-arrow {
+    transform: rotate(90deg);
+    justify-self: start;
+  }
+}
