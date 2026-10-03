@@ -62,6 +62,14 @@ Unexpected difference is information.
 
 A violated prediction opens inquiry; it does not authorize a global judgment.
 
+**OMISSION != NONEXISTENCE**
+
+If something appears in one receipt and is absent from another, the runtime may say it was not recorded again. It may not claim that the thing disappeared, stopped mattering, or was resolved.
+
+**RESOLUTION REQUIRES A RECEIPT**
+
+An unresolved item leaves the active relation inventory only when participants explicitly mark it resolved or otherwise authorize its removal.
+
 ## Memory
 
 **MEMORY != AUTHORITY**
