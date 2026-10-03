@@ -1,44 +1,49 @@
 # LOVE
 
-**Correspondence, quests, and Dogram relation experiments.**
+**Sims by mail, with Dogram instead of compatibility scores.**
 
-LOVE is not a compatibility engine.
+LOVE does not rank people or infer a hidden essence called “the match.”
 
-It does not score people, rank desirability, or infer a hidden essence called “the match.”
-
-LOVE composes **doors** between consenting people, records what actually happened when a door was crossed, and uses Dogram-style perturbation to ask what changed.
+It treats correspondence, artifacts, quests, crossings, and returns as a persistent shared relation state.
 
 > **LOVE does not model people. LOVE models crossings between people.**
 
-## Sims by mail
+## Runtime 005
 
-Runtime 004 turns the shorthand into architecture:
-
-```text
-LETTER = TURN PACKET
-RELATION = SAVE FILE
-OPEN = AUTHORIZED WORLD MUTATION
-```
-
-A turn may contain words, one explicit reveal, one artifact, and one possible door proposal.
-
-The recipient can:
+The correspondence loop now reaches all the way back into the physical-world loop:
 
 ```text
-OPEN
-HOLD
-DECLINE UNOPENED
+LETTER
+  ↓
+OPENED PROPOSAL
+  ↓
+ACCEPT / ALTER / DECLINE
+  ↓
+MUTUAL COMPOSITION
+  ↓
+REAL DOOR
+  ↓
+FRESH CROSSING CONSENT
+  ↓
+OCCURRENCE 004
+  ↓
+delta@1
+  ↓
+RELATION SAVE FILE
 ```
 
-Only opening admits explicit payload into the shared relation.
+A mail proposal never skips the intermediate states.
 
 ```text
 DELIVERY != OPENING
-SEALED != SHARED
 PROPOSAL != DOOR
+ACCEPTANCE APPLIES TO A REVISION
+ALTERATION INVALIDATES PRIOR ACCEPTANCE
+MUTUAL COMPOSITION != CROSSING
+DOOR != CROSSING
 ```
 
-## Run the specimen
+## Run
 
 Open:
 
@@ -46,23 +51,31 @@ Open:
 runtime/index.html
 ```
 
-Runtime 004 remains zero-dependency and local-first.
+No build step, account, server, or network service is required.
 
-It preserves the earlier encounter sequence:
+Runtime 005 migrates earlier Runtime 001–004 local saves.
 
-```text
-Door 001 -> occurrence 001 -> baseline@1
-Door 002 -> occurrence 002 -> delta@1
-Door 003 -> occurrence 003 -> reenter@1
-```
-
-and adds an indefinitely repeatable mail-turn loop:
+## Current executable path
 
 ```text
-compose -> seal -> deliver -> open/hold/decline -> world mutation -> next sender
+presence
+-> first letters
+-> Door 001
+-> occurrence 001
+-> baseline@1
+-> Door 002
+-> occurrence 002
+-> delta@1
+-> reenter prior Door
+-> occurrence 003
+-> reenter@1
+-> mail turns
+-> opened proposal
+-> negotiated revision
+-> composed mail Door
+-> occurrence 004
+-> mail-origin delta@1
 ```
-
-See [runtime/README.md](./runtime/README.md), [docs/RUNTIME-004.md](./docs/RUNTIME-004.md), [docs/MAIL-TURN-001.md](./docs/MAIL-TURN-001.md), and [docs/SAVE-FILE-001.md](./docs/SAVE-FILE-001.md).
 
 ## First principles
 
@@ -71,7 +84,12 @@ See [runtime/README.md](./runtime/README.md), [docs/RUNTIME-004.md](./docs/RUNTI
 - OBSERVATION != IDENTITY
 - DELIVERY != OPENING
 - SEALED != SHARED
+- HOLD != INTERPRETATION
+- DECLINE != PUNISHMENT
 - PROPOSAL != DOOR
+- ACCEPTANCE APPLIES TO A REVISION
+- ALTERATION INVALIDATES PRIOR ACCEPTANCE
+- MUTUAL COMPOSITION != CROSSING
 - RECOMMENDATION != SELECTION
 - DOOR != CROSSING
 - REPEATED SETTING != SAME OCCURRENCE
@@ -90,20 +108,19 @@ See [LAWS.md](./LAWS.md).
 
 ## Repository map
 
-- `runtime/` — executable Runtime 004
-- `docs/RUNTIME-004.md` — mail-turn runtime
-- `docs/MAIL-TURN-001.md` — sealed packet semantics
-- `docs/SAVE-FILE-001.md` — Sims-by-mail save model
+- `runtime/` — executable Runtime 005
+- `docs/RUNTIME-005.md` — negotiation-to-crossing runtime
+- `docs/MAIL-NEGOTIATION-001.md` — proposal revision semantics
+- `docs/MAIL-TURN-001.md` — sealed mail packets
+- `docs/SAVE-FILE-001.md` — relation as save file
 - `docs/FIFTY-FIRST-DATES-001.md` — historical re-entry
-- `schemas/turn-packet.v0.json` — mail-turn contract
-- `schemas/` — relation, door, quest, encounter, letter, and Dogram contracts
-- `examples/MAIL-TURN-001.md` — opened/held/declined specimen
-- `examples/FIRST-CROSSING-001.md` — baseline specimen
-- `examples/SECOND-CROSSING-001.md` — delta specimen
-- `examples/RETURN-CROSSING-001.md` — re-entry specimen
+- `schemas/mail-offer.v0.json` — negotiable proposal contract
+- `schemas/turn-packet.v0.json` — mail transport contract
+- `schemas/` — Door, quest, occurrence, relation, and Dogram contracts
+- `examples/MAIL-NEGOTIATION-001.md` — counterproposal → Door → crossing specimen
 
 ## Status
 
-**Runtime 004: Letters Are Turns is live.**
+**Runtime 005: Mutual Composition is live.**
 
-The next boundary is mail-offer negotiation: convert a proposal into a real Door only through mutual composition.
+The next clean boundary is a visual relation-world map built from doors, relics, correspondence, unresolved threads, and historical crossings.
