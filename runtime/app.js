@@ -1,5 +1,6 @@
-const STORAGE_KEY = "love-runtime-002";
-const LEGACY_KEY = "love-runtime-001";
+const STORAGE_KEY = "love-runtime-003";
+const LEGACY_KEY_002 = "love-runtime-002";
+const LEGACY_KEY_001 = "love-runtime-001";
 
 const sample = {
   A: {
@@ -17,7 +18,7 @@ const sample = {
 };
 
 const emptyState = () => ({
-  version: "love-runtime-002",
+  version: "love-runtime-003",
   participants: { A: null, B: null },
   letters: { prompt: "", A: "", B: "", openA: false, openB: false },
   firstDoor: null,
@@ -28,6 +29,9 @@ const emptyState = () => ({
   nextDoor: null,
   nextDoorAccepted: { A: false, B: false },
   deltaApplied: false,
+  reentryDoor: null,
+  reentryDoorAccepted: { A: false, B: false },
+  reentryApplied: false,
   relation: {
     occurrence_count: 0,
     relics: [],
@@ -42,9 +46,23 @@ let state = loadState();
 function loadState() {
   try {
     const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (current) return current;
+    if (current) return { ...emptyState(), ...current };
 
-    const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY));
+    const v2 = JSON.parse(localStorage.getItem(LEGACY_KEY_002));
+    if (v2) {
+      const migrated = {
+        ...emptyState(),
+        ...v2,
+        version: "love-runtime-003",
+        reentryDoor: null,
+        reentryDoorAccepted: { A: false, B: false },
+        reentryApplied: false
+      };
+      saveRaw(migrated);
+      return migrated;
+    }
+
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY_001));
     if (!legacy) return emptyState();
 
     const migrated = emptyState();
@@ -65,7 +83,6 @@ function loadState() {
     return emptyState();
   }
 }
-
 function saveRaw(value) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 }
@@ -187,6 +204,90 @@ function buildNextDoor(choice) {
       "the door changes one declared encounter dimension",
       "both participants may accept, decline, or modify it"
     ]
+  };
+}
+
+function historicalDoorById(doorId) {
+  if (state.firstDoor?.door_id === doorId) return state.firstDoor;
+  if (state.nextDoor?.door_id === doorId) return state.nextDoor;
+  return null;
+}
+
+function buildReentryDoor(sourceDoor, sourceOccurrence) {
+  const A = state.participants.A;
+  const B = state.participants.B;
+  return {
+    door_id: "door-003",
+    reenters_door_id: sourceDoor.door_id,
+    source_occurrence_id: sourceOccurrence.occurrence_id,
+    title: `Return: ${sourceDoor.title}`,
+    premise: sourceDoor.premise,
+    quest: sourceDoor.quest,
+    declared_perturbation: "re-enter prior door after intervening history; door structure held constant",
+    question: `What survives the return to ${sourceDoor.title}?`,
+    constraints: unique([...A.constraints, ...B.constraints]),
+    why_reachable: [
+      "the source door was crossed before",
+      "a distinct historical occurrence already exists",
+      "both participants may accept, decline, or modify the return"
+    ]
+  };
+}
+
+function runReentry(original, current, door) {
+  const changed = [];
+  const persisted = [];
+  const appeared = [];
+  const returned = [];
+  const unresolved = [];
+
+  const durationDelta = current.actual_minutes - original.actual_minutes;
+  if (durationDelta !== 0) {
+    changed.push(`actual duration changed from ${original.actual_minutes} to ${current.actual_minutes} minutes (${durationDelta > 0 ? "+" : ""}${durationDelta})`);
+  } else {
+    persisted.push(`actual duration remained ${current.actual_minutes} minutes`);
+  }
+
+  intersection(original.artifacts, current.artifacts)
+    .forEach(v => returned.push(`relic returned: ${v}`));
+  difference(current.artifacts, original.artifacts)
+    .forEach(v => appeared.push(`new return artifact: ${v}`));
+
+  intersection(original.questions_generated, current.questions_generated)
+    .forEach(v => persisted.push(`question survived the return: ${v}`));
+  difference(current.questions_generated, original.questions_generated)
+    .forEach(v => appeared.push(`new question on return: ${v}`));
+
+  intersection(original.observations, current.observations)
+    .forEach(v => persisted.push(`recorded observation survived the return: ${v}`));
+  difference(current.observations, original.observations)
+    .forEach(v => appeared.push(`new recorded observation on return: ${v}`));
+
+  const explicitlyResolved = current.resolved_previous || [];
+  explicitlyResolved.forEach(v => changed.push(`explicitly resolved by return occurrence: ${v}`));
+
+  difference(original.unresolved, [...current.unresolved, ...explicitlyResolved])
+    .forEach(v => unresolved.push(`status unknown; source unresolved item was not repeated: ${v}`));
+  current.unresolved.forEach(v => unresolved.push(v));
+
+  return {
+    probe_id: "probe-003",
+    operator: "reenter@1",
+    source_door_id: door.reenters_door_id,
+    declared_perturbation: door.declared_perturbation,
+    occurrence_ids: [original.occurrence_id, current.occurrence_id],
+    equation: `reenter@1(${door.reenters_door_id}): ${original.occurrence_id} → ${current.occurrence_id}`,
+    residual: {
+      changed: unique(changed),
+      persisted: unique(persisted),
+      appeared: unique(appeared),
+      returned: unique(returned),
+      disappeared: [],
+      became_reachable: ["reenter another prior door", "compose Door 004 from the return residual"],
+      became_unreachable: [],
+      unresolved: unique(unresolved),
+      explicitly_resolved: explicitlyResolved
+    }
   };
 }
 
@@ -336,16 +437,19 @@ function render() {
 
   const nameA = A?.name || "Participant A";
   const nameB = B?.name || "Participant B";
-  ["#labelA", "#acceptALabel", "#accept2ALabel"].forEach(s => document.querySelector(s).textContent = nameA);
-  ["#labelB", "#acceptBLabel", "#accept2BLabel"].forEach(s => document.querySelector(s).textContent = nameB);
+  ["#labelA", "#acceptALabel", "#accept2ALabel", "#accept3ALabel"].forEach(s => document.querySelector(s).textContent = nameA);
+  ["#labelB", "#acceptBLabel", "#accept2BLabel", "#accept3BLabel"].forEach(s => document.querySelector(s).textContent = nameB);
 
   document.querySelector("#acceptA").checked = !!state.firstDoorAccepted.A;
   document.querySelector("#acceptB").checked = !!state.firstDoorAccepted.B;
   document.querySelector("#accept2A").checked = !!state.nextDoorAccepted.A;
   document.querySelector("#accept2B").checked = !!state.nextDoorAccepted.B;
+  document.querySelector("#accept3A").checked = !!state.reentryDoorAccepted.A;
+  document.querySelector("#accept3B").checked = !!state.reentryDoorAccepted.B;
 
   renderDoor("#doorCard", state.firstDoor, "<h2>No door is open yet.</h2><p>Mutual opening is required.</p>");
   renderDoor("#nextDoorCard", state.nextDoor, "<h2>No second door selected.</h2><p>Select one from the relation inventory first.</p>");
+  renderDoor("#reentryDoorCard", state.reentryDoor, "<h2>No return door prepared.</h2><p>Choose a prior crossing from the relation inventory.</p>");
 
   const baseline = state.probes.find(p => p.operator === "baseline@1");
   const dogram = document.querySelector("#dogramReceipt");
@@ -382,6 +486,28 @@ function render() {
   } else {
     deltaCard.classList.add("muted");
     deltaCard.innerHTML = "<p>Two occurrences are required.</p>";
+  }
+
+  const reentry = state.probes.find(p => p.operator === "reenter@1");
+  const reentryCard = document.querySelector("#reentryReceipt");
+  if (reentry) {
+    reentryCard.classList.remove("muted");
+    const r = reentry.residual;
+    reentryCard.innerHTML = `
+      <p class="tag">${reentry.operator}</p>
+      <p class="delta-equation">${escapeHtml(reentry.equation)}</p>
+      <p><strong>Declared return:</strong> ${escapeHtml(reentry.declared_perturbation)}</p>
+      ${receiptList("Returned", r.returned)}
+      ${receiptList("Persisted", r.persisted)}
+      ${receiptList("Changed", r.changed)}
+      ${receiptList("Appeared", r.appeared)}
+      ${receiptList("Became reachable", r.became_reachable)}
+      ${receiptList("Unresolved", r.unresolved)}
+      <p><strong>Disappeared:</strong> not inferred from omission.</p>
+    `;
+  } else {
+    reentryCard.classList.add("muted");
+    reentryCard.innerHTML = "<p>A returned occurrence is required.</p>";
   }
 
   document.querySelector("#relationTitle").textContent =
@@ -424,6 +550,36 @@ function render() {
   perturbation.innerHTML = state.nextDoor
     ? `<p class="tag">Declared perturbation</p><p><strong>${escapeHtml(state.nextDoor.declared_perturbation)}</strong></p><p>${escapeHtml(state.nextDoor.question)}</p>`
     : '<p class="tag">Declared perturbation</p><p>No Door 002 selected.</p>';
+
+  const crossedHistory = state.occurrences.filter(o =>
+    ["door-001", "door-002"].includes(o.door_id) && historicalDoorById(o.door_id)
+  );
+  const reentryChoices = document.querySelector("#reentryChoices");
+  reentryChoices.innerHTML = crossedHistory.length
+    ? crossedHistory.map(o => {
+        const d = historicalDoorById(o.door_id);
+        const selected = state.reentryDoor?.source_occurrence_id === o.occurrence_id ? "checked" : "";
+        return `
+          <article>
+            <label class="door-choice">
+              <input type="radio" name="reentryChoice" value="${escapeHtml(o.occurrence_id)}" ${selected} />
+              <span>
+                <strong>${escapeHtml(d.title)}</strong> — ${escapeHtml(o.occurrence_id)}<br />
+                <small>reenter the same door as a new historical occurrence</small>
+              </span>
+            </label>
+          </article>
+        `;
+      }).join("")
+    : "<p>No crossed door is available for re-entry yet.</p>";
+
+  const reentryBanner = document.querySelector("#reentryBanner");
+  reentryBanner.innerHTML = state.reentryDoor
+    ? `<p class="tag">Re-entry comparison</p>
+       <p><strong>${escapeHtml(state.reentryDoor.source_occurrence_id)} → occurrence-003</strong></p>
+       <p>${escapeHtml(state.reentryDoor.declared_perturbation)}</p>
+       <p>${escapeHtml(state.reentryDoor.question)}</p>`
+    : '<p class="tag">Re-entry comparison</p><p>No return door prepared.</p>';
 }
 
 document.querySelectorAll(".steps button").forEach(button => {
@@ -671,12 +827,157 @@ document.querySelector("#carryDelta").addEventListener("click", () => {
   showStep("relation");
 });
 
+document.querySelector("#prepareReentry").addEventListener("click", () => {
+  const selected = document.querySelector('input[name="reentryChoice"]:checked');
+  const status = document.querySelector("#reentryPrepStatus");
+
+  if (!state.deltaApplied) {
+    status.textContent = "Carry delta@1 first so the return occurs after an intervening relation state.";
+    return;
+  }
+  if (!selected) {
+    status.textContent = "Choose a historical crossing to reopen.";
+    return;
+  }
+
+  const sourceOccurrence = state.occurrences.find(o => o.occurrence_id === selected.value);
+  const sourceDoor = sourceOccurrence ? historicalDoorById(sourceOccurrence.door_id) : null;
+  if (!sourceOccurrence || !sourceDoor) {
+    status.textContent = "The selected historical door could not be reconstructed.";
+    return;
+  }
+
+  state.reentryDoor = buildReentryDoor(sourceDoor, sourceOccurrence);
+  state.reentryDoorAccepted = { A: false, B: false };
+  state.reentryApplied = false;
+  state.probes = state.probes.filter(p => p.operator !== "reenter@1");
+  status.textContent = `${sourceDoor.title} reopened as Door 003. Same door; new occurrence.`;
+  saveState();
+  render();
+  showStep("return-door");
+});
+
+document.querySelector("#crossReentryDoor").addEventListener("click", () => {
+  state.reentryDoorAccepted.A = document.querySelector("#accept3A").checked;
+  state.reentryDoorAccepted.B = document.querySelector("#accept3B").checked;
+  const status = document.querySelector("#reentryDoorStatus");
+
+  if (!state.reentryDoor) status.textContent = "There is no return door to cross.";
+  else if (!(state.reentryDoorAccepted.A && state.reentryDoorAccepted.B)) {
+    status.textContent = "DOOR ≠ CROSSING. The return still requires mutual acceptance.";
+  } else {
+    status.textContent = "Return crossed. Receipt occurrence 003 without copying occurrence history into the present.";
+    showStep("third-crossing");
+  }
+  saveState();
+});
+
+document.querySelector("#fillThirdSample").addEventListener("click", () => {
+  if (state.reentryDoor?.reenters_door_id === "door-002") {
+    document.querySelector("#plannedMinutes3").value = 45;
+    document.querySelector("#actualMinutes3").value = 88;
+    document.querySelector("#observations3").value = [
+      "both continued walking after the planned turnaround point",
+      "conversation continued without an object-hunting task",
+      "both stopped at the same railroad crossing without prompting"
+    ].join("\n");
+    document.querySelector("#artifacts3").value = "a hand-drawn map of the walk\na pressed maple leaf";
+    document.querySelector("#questions3").value = "Why trains?\nWhat makes silence comfortable?\nWhat makes a place worth returning to?";
+  } else {
+    document.querySelector("#plannedMinutes3").value = 45;
+    document.querySelector("#actualMinutes3").value = 110;
+    document.querySelector("#observations3").value = [
+      "both independently extended the encounter",
+      "Rowan asked to inspect the train postcard",
+      "both laughed when the tiny ceramic duck returned"
+    ].join("\n");
+    document.querySelector("#artifacts3").value = "tiny ceramic duck\ngreen glass bead";
+    document.querySelector("#questions3").value = "Why trains?\nWhat makes a place worth returning to?";
+  }
+  document.querySelector("#unresolved3").value = "what part of the return belonged to memory versus the present occurrence";
+  document.querySelector("#resolved3").value = "";
+});
+
+document.querySelector("#saveEncounter3").addEventListener("click", () => {
+  if (!(state.reentryDoor && state.reentryDoorAccepted.A && state.reentryDoorAccepted.B)) {
+    document.querySelector("#crossingStatus3").textContent = "No mutually accepted return door exists.";
+    return;
+  }
+
+  const original = state.occurrences.find(o => o.occurrence_id === state.reentryDoor.source_occurrence_id);
+  if (!original) {
+    document.querySelector("#crossingStatus3").textContent = "The source occurrence is missing; reenter@1 cannot be grounded.";
+    return;
+  }
+
+  const current = {
+    occurrence_id: "occurrence-003",
+    door_id: state.reentryDoor.door_id,
+    participants: [state.participants.A.name, state.participants.B.name],
+    planned_minutes: Number(document.querySelector("#plannedMinutes3").value || 0),
+    actual_minutes: Number(document.querySelector("#actualMinutes3").value || 0),
+    observations: lines(document.querySelector("#observations3").value),
+    artifacts: lines(document.querySelector("#artifacts3").value),
+    questions_generated: lines(document.querySelector("#questions3").value),
+    unresolved: lines(document.querySelector("#unresolved3").value),
+    resolved_previous: lines(document.querySelector("#resolved3").value)
+  };
+
+  state.occurrences = [
+    ...state.occurrences.filter(o => o.occurrence_id !== "occurrence-003"),
+    current
+  ];
+  const probe = runReentry(original, current, state.reentryDoor);
+  state.probes = [
+    ...state.probes.filter(p => p.operator !== "reenter@1"),
+    probe
+  ];
+  state.reentryApplied = false;
+  document.querySelector("#crossingStatus3").textContent =
+    `Occurrence 003 receipted against ${original.occurrence_id}. The return remains a distinct historical event.`;
+  saveState();
+  render();
+  showStep("reentry");
+});
+
+document.querySelector("#carryReentry").addEventListener("click", () => {
+  if (state.reentryApplied) {
+    document.querySelector("#reentryStatus").textContent = "This return is already carried into the relation.";
+    showStep("relation");
+    return;
+  }
+
+  const current = state.occurrences.find(o => o.occurrence_id === "occurrence-003");
+  const probe = state.probes.find(p => p.operator === "reenter@1");
+  if (!current || !probe) return;
+
+  state.relation.occurrence_count = Math.max(state.relation.occurrence_count, 3);
+  state.relation.relics = unique([...state.relation.relics, ...current.artifacts]);
+  state.relation.mutually_reachable = unique([
+    ...state.relation.mutually_reachable,
+    ...probe.residual.became_reachable
+  ]);
+
+  const resolvedNorm = new Set((probe.residual.explicitly_resolved || []).map(normalize));
+  state.relation.unresolved = unique([
+    ...state.relation.unresolved.filter(v => !resolvedNorm.has(normalize(v))),
+    ...current.unresolved
+  ]);
+
+  state.reentryApplied = true;
+  document.querySelector("#reentryStatus").textContent =
+    "reenter@1 carried. The save file remembers the return without treating it as the old event.";
+  saveState();
+  render();
+  showStep("relation");
+});
+
 document.querySelector("#exportState").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "love-relation-002.json";
+  a.download = "love-relation-003.json";
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -685,7 +986,8 @@ document.querySelector("#resetState").addEventListener("click", () => {
   if (!confirm("Reset the local LOVE runtime state?")) return;
   state = emptyState();
   localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(LEGACY_KEY);
+  localStorage.removeItem(LEGACY_KEY_002);
+  localStorage.removeItem(LEGACY_KEY_001);
   render();
   showStep("presence");
 });
