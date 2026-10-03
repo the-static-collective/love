@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LOVE Runtime 003</title>
+  <title>LOVE Runtime 004</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <p class="eyebrow">LOVE Runtime 003</p>
+      <p class="eyebrow">LOVE Runtime 004</p>
       <h1>You have received a letter.</h1>
       <p class="lede">
         Correspondence, consented doors, quests, and Dogram comparison without compatibility scores.
@@ -35,6 +35,7 @@
       <button data-step="return-door">10. Return</button>
       <button data-step="third-crossing">11. Crossing 003</button>
       <button data-step="reentry">12. Re-entry</button>
+      <button data-step="mailbox">13. Your Mail</button>
     </nav>
 
     <section id="presence" class="panel active">
@@ -278,6 +279,66 @@
       <div id="reentryReceipt" class="card receipt muted"><p>A returned occurrence is required.</p></div>
       <button id="carryReentry" class="primary">Carry return → update relation inventory</button>
       <p id="reentryStatus" class="status"></p>
+    </section>
+
+    <section id="mailbox" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">YOUR MAIL — Runtime 004</p>
+          <h2>Letters are turns.</h2>
+          <p class="lede-small">A sealed packet can carry words, one explicit reveal, one artifact, and one possible door. Nothing enters the shared world until the recipient opens it.</p>
+        </div>
+        <button id="fillMailSample" class="ghost">Fill specimen turn</button>
+      </div>
+
+      <div id="mailTurnHeader" class="card mail-status"></div>
+
+      <div id="mailComposer" class="card">
+        <p class="tag">Compose turn packet</p>
+        <div class="mail-route">
+          <div><span class="tag">From</span><strong id="mailSenderLabel">A</strong></div>
+          <div class="mail-arrow">→</div>
+          <div><span class="tag">To</span><strong id="mailRecipientLabel">B</strong></div>
+        </div>
+
+        <label>Letter<textarea id="mailBody" rows="10" placeholder="Write the turn letter..."></textarea></label>
+        <label>Explicit reveal <span class="hint">(optional; becomes shared only if opened)</span><textarea id="mailReveal" placeholder="One thing I choose to make part of the shared world..."></textarea></label>
+        <label>Enclosed artifact / relic <span class="hint">(optional)</span><input id="mailArtifact" placeholder="postcard, drawing, pressed leaf..." /></label>
+
+        <fieldset class="mail-door">
+          <legend>Possible door <span class="hint">(optional proposal, never acceptance)</span></legend>
+          <label>Title<input id="mailDoorTitle" placeholder="The Midnight Pancake Door" /></label>
+          <label>Premise<textarea id="mailDoorPremise" placeholder="A bounded possible crossing..."></textarea></label>
+          <label>Changed variable / question<input id="mailDoorPerturbation" placeholder="evening instead of daytime" /></label>
+        </fieldset>
+
+        <button id="sendMailTurn" class="primary">Seal + deliver turn</button>
+        <p id="mailSendStatus" class="status"></p>
+      </div>
+
+      <div id="incomingMail" class="card incoming-mail muted">
+        <p class="tag">Incoming turn</p>
+        <div id="incomingMailCard"><p>No sealed turn is waiting.</p></div>
+        <div class="mail-decisions">
+          <button id="openMailTurn" class="primary">Open</button>
+          <button id="holdMailTurn" class="ghost">Hold</button>
+          <button id="declineMailTurn" class="danger">Decline unopened</button>
+        </div>
+        <p id="mailDecisionStatus" class="status"></p>
+      </div>
+
+      <div class="card history-card">
+        <p class="tag">Mail history</p>
+        <div id="mailHistory"></div>
+      </div>
+
+      <div class="card world-card">
+        <p class="tag">Mail-layer world state</p>
+        <div class="relation-grid">
+          <div><strong>Revealed threads</strong><ul id="revealedThreadList"></ul></div>
+          <div><strong>Open door proposals</strong><ul id="mailOfferList"></ul></div>
+        </div>
+      </div>
     </section>
   </main>
 
