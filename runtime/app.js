@@ -168,9 +168,19 @@ function composeFirstDoor(A, B) {
     door_id: "door-001",
     title: "The Three-Dollar Relic",
     premise: "Meet at a thrift store neither person has visited.",
-    quest: "Each person has $3. Choose one object that explains something about where you came from.",
+    quest: {
+      quest_id: "quest-001",
+      premise: "Each person has $3. Choose one object that explains something about where you came from.",
+      shared_object: "two chosen thrift-store relics",
+      changed_variable: "first shared task",
+      constraints: ["$3 per participant", "public setting", "either participant may stop"],
+      opt_outs: ["skip purchase", "substitute a photographed object", "end encounter"],
+      completion_definition: "Each participant either chooses an object or explicitly opts out.",
+      artifact_prompt: "Keep, photograph, draw, or describe the selected object."
+    },
     declared_perturbation: "first shared task",
     constraints: unique([...A.constraints, ...B.constraints]),
+    requires_mutual_acceptance: true,
     why_reachable: [
       "both participants opened a crossing",
       "declared constraints can coexist",
@@ -216,10 +226,20 @@ function buildNextDoor(choice) {
     choice_key: choice.key,
     title: choice.title,
     premise: choice.premise,
-    quest: choice.quest,
+    quest: {
+      quest_id: "quest-002",
+      premise: choice.quest,
+      shared_object: null,
+      changed_variable: choice.perturbation,
+      constraints: unique([...A.constraints, ...B.constraints]),
+      opt_outs: ["modify the quest", "decline this door", "end the occurrence"],
+      completion_definition: "The participants either perform the bounded quest or explicitly stop.",
+      artifact_prompt: "Record only artifacts the participants choose to carry into the relation."
+    },
     declared_perturbation: choice.perturbation,
     question: choice.question,
     constraints: unique([...A.constraints, ...B.constraints]),
+    requires_mutual_acceptance: true,
     why_reachable: [
       "at least one prior occurrence is receipted",
       "the door changes one declared encounter dimension",
@@ -247,6 +267,7 @@ function buildReentryDoor(sourceDoor, sourceOccurrence) {
     declared_perturbation: "re-enter prior door after intervening history; door structure held constant",
     question: `What survives the return to ${sourceDoor.title}?`,
     constraints: unique([...A.constraints, ...B.constraints]),
+    requires_mutual_acceptance: true,
     why_reachable: [
       "the source door was crossed before",
       "a distinct historical occurrence already exists",
@@ -426,6 +447,11 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+function questText(quest) {
+  if (!quest) return "";
+  return typeof quest === "string" ? quest : quest.premise || "";
+}
+
 function renderDoor(cardSelector, door, fallback) {
   const card = document.querySelector(cardSelector);
   if (!door) {
@@ -438,7 +464,7 @@ function renderDoor(cardSelector, door, fallback) {
     <p class="tag">${escapeHtml(door.door_id)}</p>
     <h2>${escapeHtml(door.title)}</h2>
     <p>${escapeHtml(door.premise)}</p>
-    <p><strong>Quest:</strong> ${escapeHtml(door.quest)}</p>
+    <p><strong>Quest:</strong> ${escapeHtml(questText(door.quest))}</p>
     <p><strong>Declared perturbation:</strong> ${escapeHtml(door.declared_perturbation)}</p>
     <p><strong>Constraints:</strong> ${door.constraints.map(escapeHtml).join(" · ") || "none declared"}</p>
   `;
