@@ -85,6 +85,13 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "places": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "relation-place.v0.json"
+          }
         }
       }
     }
