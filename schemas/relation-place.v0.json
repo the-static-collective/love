@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-static-collective.github.io/love/schemas/relation-place.v0.json",
+  "title": "LOVE Relation Place v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "place_id",
+    "name",
+    "source_occurrence_ids",
+    "relics",
+    "unresolved",
+    "reachable_from_here",
+    "formed_after_occurrence_count"
+  ],
+  "properties": {
+    "place_id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "source_occurrence_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "relics": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "reachable_from_here": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "formed_after_occurrence_count": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
