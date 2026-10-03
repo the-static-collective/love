@@ -2,50 +2,41 @@
 
 **Sims by mail, with Dogram instead of compatibility scores.**
 
-LOVE treats correspondence, artifacts, quests, crossings, returns, and shared places as a persistent relation world.
+LOVE treats correspondence, crossings, relics, questions, negotiated Doors, and formed relation places as a persistent shared world.
 
 > **LOVE does not model people. LOVE models crossings between people.**
 
-## Runtime 006 — The Relation World
+## Runtime 007 — Address the Place
 
-The save file now has a visual world model:
-
-~~~text
-MAILBOX
-things traveling between the humans
-
-THE ROOM
-things jointly admitted into history
-
-THE HORIZON
-things currently reachable but not crossed
-~~~
-
-The runtime derives this view from actual receipts.
-
-It also makes a long-standing law executable:
+A formed relation place can now be used as correspondence context:
 
 ~~~text
-THE CROSSING BECOMES A PLACE
+From: Rowan
+To: Mira
+Via: The Postcard Table
 ~~~
 
-Participants can explicitly gather occurrences, relics, and unresolved questions into a named place such as:
+The place is not the recipient.
 
 ~~~text
-THE POSTCARD TABLE
-├── occurrence-004
-├── two annotated postcards
-├── unresolved future-place question
-└── reachable doors
+ADDRESS != RECIPIENT
 ~~~
 
-LOVE does not silently infer that a cluster is meaningful.
+The human still controls opening, holding, and declining.
+
+The place contributes a frozen snapshot of its historical sources:
+
+- occurrences
+- relics
+- unresolved questions
+- reachable future at send time
 
 ~~~text
-CLUSTER != PLACE
-PLACE FORMATION REQUIRES AUTHORSHIP
-PLACE != GEOGRAPHY
+PLACE CONTEXT IS A SNAPSHOT
+ADDRESSING != REENTRY
 ~~~
+
+If the human opens the packet, the new turn can join that place's history. Holding or declining unopened leaves the place untouched.
 
 ## Run
 
@@ -57,55 +48,48 @@ runtime/index.html
 
 No build step, account, server, or network service is required.
 
-Runtime 006 migrates Runtime 001–005 local saves.
+Runtime 007 migrates Runtime 001–006 local saves.
 
 ## Executable path
 
 ~~~text
-presence
--> letters
--> crossings
--> Dogram probes
--> re-entry
--> mail turns
--> proposal negotiation
--> composed Door
--> mail-origin crossing
+crossings
+-> Dogram history
+-> mail
+-> negotiated Doors
 -> relation world
--> formed places
+-> formed place
+-> place-addressed letter
+-> opened contextual turn
+-> deeper place history
 ~~~
 
-## First principles
+## Current laws
 
 - PERSON != PROFILE
 - RELATION != PERSON
 - DELIVERY != OPENING
 - PROPOSAL != DOOR
-- ACCEPTANCE APPLIES TO A REVISION
 - MUTUAL COMPOSITION != CROSSING
 - DOOR != CROSSING
-- OMISSION != NONEXISTENCE
-- DOGRAM MEASURES TRANSFORMS, NOT PEOPLE
 - THE CROSSING BECOMES A PLACE
 - PLACE FORMATION REQUIRES AUTHORSHIP
-- THE MAP IS A VIEW OF THE SAVE FILE
+- ADDRESS != RECIPIENT
+- PLACE CONTEXT IS A SNAPSHOT
+- ADDRESSING != REENTRY
+- DOGRAM MEASURES TRANSFORMS, NOT PEOPLE
 - NO GLOBAL COMPATIBILITY SCORE
-- NO HUMAN LEADERBOARD
-- NO SWIPE MARKET
 
 See LAWS.md.
 
-## Repository map
+## New Runtime 007 artifacts
 
-- runtime/ — executable Runtime 006
-- docs/RUNTIME-006.md — world-view runtime
-- docs/RELATION-WORLD-001.md — Mailbox / Room / Horizon model
-- docs/RELATION-PLACE-001.md — explicit place formation
-- schemas/relation-place.v0.json — persistent place contract
-- schemas/ — mail, Door, quest, occurrence, relation, and Dogram contracts
+- docs/RUNTIME-007.md
+- docs/PLACE-ADDRESS-001.md
+- examples/PLACE-ADDRESSED-MAIL-001.md
+- expanded turn-packet schema
+- expanded relation-place schema
 
 ## Status
 
-**Runtime 006: The Relation World is live.**
-
-The next clean boundary is making places active addresses for future correspondence and re-entry.
+**Runtime 007: Address the Place is live.**
