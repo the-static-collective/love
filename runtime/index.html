@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LOVE Runtime 004</title>
+  <title>LOVE Runtime 005</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <p class="eyebrow">LOVE Runtime 004</p>
+      <p class="eyebrow">LOVE Runtime 005</p>
       <h1>You have received a letter.</h1>
       <p class="lede">
         Correspondence, consented doors, quests, and Dogram comparison without compatibility scores.
@@ -36,6 +36,10 @@
       <button data-step="third-crossing">11. Crossing 003</button>
       <button data-step="reentry">12. Re-entry</button>
       <button data-step="mailbox">13. Your Mail</button>
+      <button data-step="mail-offer">14. Compose Door</button>
+      <button data-step="mail-door">15. Mail Door</button>
+      <button data-step="mail-crossing">16. Crossing 004</button>
+      <button data-step="mail-delta">17. Mail Δ</button>
     </nav>
 
     <section id="presence" class="panel active">
@@ -284,7 +288,7 @@
     <section id="mailbox" class="panel">
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">YOUR MAIL — Runtime 004</p>
+          <p class="eyebrow">YOUR MAIL — Runtime 005</p>
           <h2>Letters are turns.</h2>
           <p class="lede-small">A sealed packet can carry words, one explicit reveal, one artifact, and one possible door. Nothing enters the shared world until the recipient opens it.</p>
         </div>
@@ -336,9 +340,87 @@
         <p class="tag">Mail-layer world state</p>
         <div class="relation-grid">
           <div><strong>Revealed threads</strong><ul id="revealedThreadList"></ul></div>
-          <div><strong>Open door proposals</strong><ul id="mailOfferList"></ul></div>
+          <div><strong>Door proposals</strong><ul id="mailOfferList"></ul></div>
         </div>
+        <button id="openOfferNegotiation" class="primary">Compose an opened proposal</button>
       </div>
+    </section>
+
+    <section id="mail-offer" class="panel">
+      <p class="eyebrow">Mutual Composition</p>
+      <h2>Proposal ≠ Door.</h2>
+      <p class="lede-small">Choose an opened mail proposal. The participant currently holding the response may accept it unchanged, alter it into a counterproposal, or decline it. Altering flips the response to the other participant.</p>
+
+      <div id="offerChoices" class="card nearby"></div>
+
+      <div id="offerNegotiationCard" class="card muted">
+        <p>No negotiable mail proposal selected.</p>
+      </div>
+
+      <div id="offerCounterForm" class="card">
+        <p class="tag">Counterproposal</p>
+        <label>Title<input id="counterTitle" /></label>
+        <label>Premise<textarea id="counterPremise"></textarea></label>
+        <label>Changed variable / question<input id="counterPerturbation" /></label>
+      </div>
+
+      <div class="mail-decisions">
+        <button id="acceptOffer" class="primary">Accept current revision</button>
+        <button id="counterOffer" class="ghost">Alter + send counter</button>
+        <button id="declineOffer" class="danger">Decline proposal</button>
+      </div>
+      <p id="offerStatus" class="status"></p>
+    </section>
+
+    <section id="mail-door" class="panel">
+      <p class="eyebrow">Composed Mail Door</p>
+      <h2>Mutual composition produced a Door.</h2>
+      <div id="mailDoorCard" class="door-card card muted">
+        <p>No proposal has reached mutual composition.</p>
+      </div>
+      <div class="accept-row">
+        <label class="check"><input type="checkbox" id="acceptMailDoorA" /> <span id="acceptMailDoorALabel">A</span> accepts this crossing.</label>
+        <label class="check"><input type="checkbox" id="acceptMailDoorB" /> <span id="acceptMailDoorBLabel">B</span> accepts this crossing.</label>
+      </div>
+      <button id="crossMailDoor" class="primary">Cross composed Door</button>
+      <p id="mailDoorStatus" class="status"></p>
+    </section>
+
+    <section id="mail-crossing" class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Occurrence 004</p>
+          <h2>The correspondence becomes a world event.</h2>
+        </div>
+        <button id="fillMailCrossingSample" class="ghost">Fill specimen crossing</button>
+      </div>
+
+      <div id="mailCrossingBanner" class="card perturbation">
+        <p>No composed mail Door exists.</p>
+      </div>
+
+      <div class="card form-grid">
+        <label>Planned minutes<input id="plannedMinutes4" type="number" min="0" value="45" /></label>
+        <label>Actual minutes<input id="actualMinutes4" type="number" min="0" value="45" /></label>
+        <label class="span-2">Observed events<textarea id="observations4" placeholder="one observation per line"></textarea></label>
+        <label class="span-2">Artifacts / relics<textarea id="artifacts4" placeholder="artifacts actually created or carried"></textarea></label>
+        <label class="span-2">Questions generated<textarea id="questions4" placeholder="new or repeated questions"></textarea></label>
+        <label class="span-2">Unresolved<textarea id="unresolved4" placeholder="what remains unresolved"></textarea></label>
+        <label class="span-2">Explicitly resolved from earlier<textarea id="resolved4" placeholder="only items explicitly resolved"></textarea></label>
+      </div>
+
+      <button id="saveEncounter4" class="primary">Receipt crossing → calculate mail delta@1</button>
+      <p id="crossingStatus4" class="status"></p>
+    </section>
+
+    <section id="mail-delta" class="panel">
+      <p class="eyebrow">delta@1 — Mail-Origin Crossing</p>
+      <h2>The mailed possibility became history.</h2>
+      <div id="mailDeltaReceipt" class="card receipt muted">
+        <p>A mail-origin crossing is required.</p>
+      </div>
+      <button id="carryMailDelta" class="primary">Carry mail delta → update relation</button>
+      <p id="mailDeltaStatus" class="status"></p>
     </section>
   </main>
 
