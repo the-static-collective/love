@@ -110,8 +110,11 @@ function normalizeLoadedState(raw) {
   base.relation = { ...emptyState().relation, ...(base.relation || {}) };
   base.relation.revealed_threads = base.relation.revealed_threads || [];
   base.relation.mail_offers = (base.relation.mail_offers || []).map((offer, index) => {
-    const proposedBy = offer.proposed_by_participant || "A";
-    const awaiting = offer.awaiting_participant || otherParticipant(proposedBy);
+    const originTurn = (base.mail.turns || []).find(turn =>
+      turn.door_proposal?.proposal_id === offer.proposal_id
+    );
+    const proposedBy = offer.proposed_by_participant || originTurn?.sender_participant || "A";
+    const awaiting = offer.awaiting_participant || originTurn?.recipient_participant || otherParticipant(proposedBy);
     return {
       ...offer,
       status: offer.status || "proposed",
@@ -1498,7 +1501,7 @@ document.querySelector("#openMailTurn").addEventListener("click", () => {
     if (!existing.has(pending.door_proposal.proposal_id)) {
       state.relation.mail_offers = [
         ...(state.relation.mail_offers || []),
-        pending.door_proposal
+        structuredClone(pending.door_proposal)
       ];
       effects.mail_offers_added.push(pending.door_proposal.proposal_id);
     }
