@@ -41,8 +41,33 @@ const emptyState = () => ({
   }
 });
 
+function normalizeDoorContract(door, questId) {
+  if (!door) return null;
+  const quest = typeof door.quest === "string"
+    ? {
+        quest_id: questId,
+        premise: door.quest,
+        shared_object: null,
+        changed_variable: door.declared_perturbation || null,
+        constraints: door.constraints || [],
+        opt_outs: ["modify the quest", "decline this door", "end the occurrence"],
+        completion_definition: "The participants either perform the bounded quest or explicitly stop.",
+        artifact_prompt: null
+      }
+    : door.quest;
+
+  return {
+    ...door,
+    quest,
+    requires_mutual_acceptance: door.requires_mutual_acceptance ?? true
+  };
+}
+
 function normalizeLoadedState(raw) {
   const base = { ...emptyState(), ...raw };
+  base.firstDoor = normalizeDoorContract(base.firstDoor, "quest-001");
+  base.nextDoor = normalizeDoorContract(base.nextDoor, "quest-002");
+  base.reentryDoor = normalizeDoorContract(base.reentryDoor, "quest-003");
   const participantNames = [
     base.participants?.A?.name || "Participant A",
     base.participants?.B?.name || "Participant B"
