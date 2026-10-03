@@ -1,4 +1,4 @@
-# LOVE Runtime 006
+# LOVE Runtime 007
 
 A zero-dependency browser specimen for the LOVE protocol.
 
@@ -6,85 +6,70 @@ A zero-dependency browser specimen for the LOVE protocol.
 
 Open runtime/index.html directly in a modern browser.
 
-No build step.
-No server required.
-No network required after the files are present.
+## What Runtime 007 adds
 
-## What Runtime 006 proves
+Formed relation places can now act as correspondence addresses.
 
-Runtime 006 adds a derived world view over the existing save file:
+A turn remains human-to-human:
 
 ~~~text
-MAILBOX     -> in transit
-THE ROOM    -> jointly admitted history
-THE HORIZON -> reachable but uncrossed possibility
+From: participant
+To: participant
+Via: relation place
 ~~~
 
-It also makes this law executable:
+The selected place contributes a frozen context snapshot to the packet.
+
+## Address semantics
 
 ~~~text
-THE CROSSING BECOMES A PLACE
+ADDRESS != RECIPIENT
+PLACE CONTEXT IS A SNAPSHOT
+ADDRESSING != REENTRY
 ~~~
 
-Participants can select historical occurrences, relics, and unresolved questions, give the composition a name, and persist that place into the relation save.
+The participant remains the only recipient and retains open / hold / decline authority.
 
-## World map
+## Context snapshot
 
-The map is derived from receipts and current state.
+The packet captures:
 
-It renders nodes for:
+- source occurrences
+- place relics
+- unresolved questions
+- reachable-from-here state
+- occurrence count when addressed
 
-- mail
-- proposal revisions
-- Doors
-- occurrences
-- relics
-- questions
-- formed places
+Historical turns therefore remain reconstructible even if the live place later grows.
 
-and edges for:
+## Open behavior
 
-- delivery/proposal provenance
-- proposal promotion
-- Door crossings
-- artifact creation
-- question generation
-- Dogram comparison
-- place formation
-- reachability
+Sending through a place does not modify that place.
 
-## Important law
+Opening the turn links the mail turn id into the place history.
+
+Holding or declining unopened does not.
+
+## Save migration
+
+Runtime 007 stores state under:
 
 ~~~text
-THE MAP IS A VIEW OF THE SAVE FILE.
-THE MAP IS NOT AN AUTHORITY OVER THE SAVE FILE.
+love-runtime-007
 ~~~
 
-Runtime 006 does not silently infer meaning from clusters.
+and migrates Runtime 006 and earlier local saves.
+
+## Current shape
 
 ~~~text
-CLUSTER != PLACE
-PLACE FORMATION REQUIRES AUTHORSHIP
+crossing
+-> place formation
+-> address letter through place
+-> frozen context travels
+-> human opens
+-> turn joins place history
+-> place becomes a deeper address
 ~~~
 
-## State
-
-Runtime 006 stores state under:
-
-~~~text
-love-runtime-006
-~~~
-
-and migrates Runtime 005 and earlier saves.
-
-## Next useful increment
-
-Runtime 007 could let formed places act as active correspondence addresses:
-
-~~~text
-send letter to a person
-or
-send letter to a place in the relation
-~~~
-
-A letter addressed to The Postcard Table could reopen its relics/questions as context without forcing either participant to re-explain the whole history.
+The relation world can now refer back to itself without collapsing old events into the present.
